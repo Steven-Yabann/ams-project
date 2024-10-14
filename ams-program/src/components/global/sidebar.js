@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "../css_files/sidebar.css";
+import "./css_files/sidebar.css";
 export default function Sidebar({ user_cat }){
     const render_links = (category) => {
         switch(category){

@@ -1,0 +1,78 @@
+.Form {
+    margin:auto;
+    margin-top: 100px;
+    padding: 5%;
+    padding-top: 25px;
+    text-align: center;
+    border-radius: 15px;
+    background-color: #3872ee;
+    color: #ffffff;
+    width: calc(100% - 80%); 
+    height: auto;
+}
+
+#logoImg {
+    margin-top: 0px;
+    width: 30%;
+    border-radius: 5px;
+}
+
+#loginForm h2 {
+    text-align: left;
+}
+
+form {
+    width: 100%; 
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+input[type="email"], 
+input[type="password"], 
+input[type="submit"], 
+input[type="text"], 
+input[type="file"], 
+textarea, 
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#rememberMe {
+    display: flex;
+    width: 100%;
+}
+
+input[type="submit"] {
+    margin-top: 10px;
+    background-color: #ffffff;
+    color: #6999ff;
+    border: none;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #3872ee;
+}
+
+.registration{
+    color: #3872ee;
+    text-decoration: none;
+}
+
+.registration:hover{
+    color: white;
+}

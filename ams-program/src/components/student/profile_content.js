@@ -1,8 +1,8 @@
-import { Book, Calendar, Globe, Hash, Mail, MapPin, Phone, User, Users } from 'lucide-react';
+import { Book, Calendar, Globe, Hash, Mail, MProfilein, Phone, User, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Button, Card, Form, Nav, Tab } from 'react-bootstrap';
 
-const App = () => {
+const Profile = () => {
   return (
     <div className="d-flex min-vh-100">
       {/* Sidebar component would go here */}
@@ -244,7 +244,7 @@ const getFieldIcon = (field) => {
       return <Hash {...iconProps} />;
     case 'address':
     case 'homeaddress':
-      return <MapPin {...iconProps} />;
+      return <MProfilein {...iconProps} />;
     case 'dob':
       return <Calendar {...iconProps} />;
     case 'class':
@@ -268,4 +268,4 @@ const getFieldIcon = (field) => {
   }
 };
 
-export default App;
+export default Profile;

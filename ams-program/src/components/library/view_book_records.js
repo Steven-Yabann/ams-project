@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../css_files/view_book_records.css';
+// import '../css_files/view_book_records.css';
 const ViewBookRecords = () => {
     const [books, setBooks] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");

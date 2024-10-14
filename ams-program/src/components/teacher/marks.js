@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import '../css_folder/marks.css';
 
-const App = () => {
+const Marks = () => {
   const [marksData, setMarksData] = useState([
     { id: 5678, subject: "Math", marks: 74 },
     { id: 8786, subject: "Chemistry", marks: 65 },
@@ -103,4 +102,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Marks;

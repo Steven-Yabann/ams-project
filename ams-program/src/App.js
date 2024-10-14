@@ -2,31 +2,35 @@
 import './App.css';
 import { useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+
 //Admin components
-import AdminSettings from "./admin_components/admin_settings";
-import Create_user from "./admin_components/create_user";
-import UpdateCalender from "./admin_components/update_calender";
-import Verify_fees from "./admin_components/verify_fees";
+import AdminSettings from './components/admin/admin_settings';
+import Create_user from './components/admin/create_user';
+import UpdateCalender from './components/admin/update_calendar';
+import Verify_fees from './components/admin/verify_fees';
+
 
 //global components
-import LogIn from "./global_components/login";
-import Sidebar from "./global_components/sidebar";
+import LogIn from './components/global/login';
+import Sidebar from './components/global/sidebar';
 
 //teacher components
-import TeacherDashboard from "./teacher_components/attendance";
-import App from "./teacher_components/marks";
+import TeacherDashboard from './components/teacher/attendance';
+import Marks from './components/teacher/marks';
 
 //library components
-import ManageFines from "./library_components/manage_fines";
-import PaymentRecords from "./library_components/payment_records";
-import UpdateBookStatus from "./library_components/update_book_status";
-import ViewBookRecords from "./library_components/view_book_records";
+import ManageFines from './components/library/manage_fines';
+import PaymentRecords from './components/library/payment_records';
+import UpdateBookStatus from './components/library/update_book_status';
+import ViewBookRecords from './components/library/view_book_records';
+
 
 //student components
-import AcademicRecords from './student_component/academic_records';
-import LibraryComponent from './student_component/library_component';
-import ProfileContent from './student_component/ProfileContent';
-import Attendance from './student_component/Student_attendance';
+import AcademicRecords from './components/student/academic_records';
+import LibraryComponent from './components/student/library_components';
+import Profile from './components/student/profile_content';
+import Attendance from './components/student/student_attendance';
+
 
 export default function IndexPage(){
 
@@ -56,7 +60,7 @@ export default function IndexPage(){
               <Route path="/library_component" element={<LibraryComponent />} />
               <Route path="/Student_attendance" element={<Attendance />} />
               <Route path="/attendance" element={<Attendance />}/>
-              <Route path="/marks" element={<App/>}/>
+              <Route path="/marks" element={<Marks/>}/>
 
 
 

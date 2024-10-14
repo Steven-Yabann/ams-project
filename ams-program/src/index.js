@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { Inter } from "next/font/google";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import BootstrapClient from "./global_components/js_files/bootstrapClient";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import BootstrapClient from './components/global/bootstrapClient';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

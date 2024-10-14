@@ -1,0 +1,41 @@
+/* Sidebar.css */
+
+.sidebar {
+  position: fixed; /* Sidebar is fixed to the viewport */
+  top: 0;
+  left: 0;
+  width: 16rem; /* Fixed width for the sidebar */
+  height: 100vh; /* Full viewport height */
+  background-color: #4a69bd; /* Adjust the color to your preference */
+  padding: 1.25rem; /* Add padding */
+  color: white;
+}
+
+.sidebar h2 {
+  font-size: 1.5rem; /* Make the section headers larger */
+  font-weight: bold;
+  margin-bottom: 2rem; /* Add some space after the header */
+}
+
+.sidebar ul {
+  list-style-type: none; /* Remove bullets */
+  padding: 0;
+}
+
+.sidebar a {
+  display: block;
+  padding: 0.5rem 1rem; /* Space around the links */
+  color: white;
+  text-decoration: none;
+  border-radius: 0.25rem; /* Slightly round the edges */
+  transition: background-color 0.3s ease; /* Smooth background transition */
+}
+
+.sidebar a:hover {
+  background-color: #1e3799; /* Darker shade on hover */
+}
+
+.main-content {
+  margin-left: 16rem; /* Offset the main content by the sidebar width */
+  padding: 1rem; /* Add some padding to the content */
+}

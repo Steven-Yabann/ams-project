@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import '../css_files/create_user.css'
+import './css_files/create_user.css'
 
 export default function Create_user(){
 

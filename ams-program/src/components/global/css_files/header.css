@@ -1,0 +1,27 @@
+.header{
+   display: flex;
+   justify-content: space-between;
+   padding: 20px; 
+   background-color: white;
+   border-bottom: 1px solid black;
+   position: fixed;
+   width: calc(100% - 330px);
+   left: 290px;
+   top: 0;
+}
+
+.title{
+    margin-top: auto;
+    margin-bottom: 0px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.header-links{
+    margin-top: auto;
+}
+
+.header-links a{
+    font-size: 20px;
+    margin: 80px 30px 0px 20px ;
+}

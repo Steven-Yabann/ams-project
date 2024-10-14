@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import '../css_files/verify_fees.css';
+import './css_files/verify_fees.css';
 
 export default function Verify_fees() {
     const [studentId, setStudentId] = useState("");

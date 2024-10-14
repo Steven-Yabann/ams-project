@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../css_files/manage_fines.css';
+// import '../css_files/manage_fines.css';
 const ManageFines = () => {
     const [fines, setFines] = useState([]);
     const [lostBooks, setLostBooks] = useState([]);

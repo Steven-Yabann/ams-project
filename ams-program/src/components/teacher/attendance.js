@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import '../css_folder/attendance.css';
 
 const TeacherDashboard = () => {
     // State to manage the list of students and their attendance status

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../css_files/admin_settings.css';
+import './css_files/admin_settings.css';
 
 export default function AdminSettings() {
     const [formData, setFormData] = useState({
