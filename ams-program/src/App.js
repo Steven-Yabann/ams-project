@@ -28,7 +28,7 @@ import ViewBookRecords from './components/library/view_book_records';
 //student components
 import AcademicRecords from './components/student/academic_records';
 import LibraryComponent from './components/student/library_components';
-import Profile from './components/student/profile_content';
+import ProfileContent from './components/student/profile_content';
 import Attendance from './components/student/student_attendance';
 
 
@@ -43,7 +43,7 @@ export default function IndexPage(){
       {isAuthenticated ? (
         <div className="main-page">
         <div className="main-content">
-          <Sidebar user_cat={4} />
+          <Sidebar user_cat={1} />
           <div className="content-area">
             <Routes>
               <Route path="/update-book-status" element={<UpdateBookStatus/>}/>

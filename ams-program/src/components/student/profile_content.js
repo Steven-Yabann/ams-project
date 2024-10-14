@@ -1,4 +1,4 @@
-import { Book, Calendar, Globe, Hash, Mail, MProfilein, Phone, User, Users } from 'lucide-react';
+import { Book, Calendar, Globe, Hash, Mail, Phone, User, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Button, Card, Form, Nav, Tab } from 'react-bootstrap';
 
@@ -244,7 +244,7 @@ const getFieldIcon = (field) => {
       return <Hash {...iconProps} />;
     case 'address':
     case 'homeaddress':
-      return <MProfilein {...iconProps} />;
+      return <User {...iconProps} />;  // Use User instead of MProfilein
     case 'dob':
       return <Calendar {...iconProps} />;
     case 'class':
@@ -267,5 +267,6 @@ const getFieldIcon = (field) => {
       return null;
   }
 };
+
 
 export default Profile;
