@@ -11,7 +11,7 @@ import Verify_fees from './components/admin/verify_fees';
 
 
 //global components
-import LogIn from './components/global/login';
+import Login from './components/global/login';
 import Sidebar from './components/global/sidebar';
 
 //teacher components
@@ -35,9 +35,13 @@ import Attendance from './components/student/student_attendance';
 export default function IndexPage(){
 
   const [isAuthenticated, setAuthentication] = useState(false)
+
+
   const handle_login = () => {
     setAuthentication(true)
-  } 
+  }
+  
+  
   return (
     <Router>
       {isAuthenticated ? (
@@ -70,7 +74,7 @@ export default function IndexPage(){
         </div>
       </div>
       ): (
-        <LogIn onLogin={handle_login}/>
+        <Login onLogin={handle_login}/>
       )
     }
     </Router>

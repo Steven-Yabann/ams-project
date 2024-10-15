@@ -5,13 +5,17 @@ import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';   
 import SignUp from './sign_in';
+import { useState } from 'react';
 
 
-export default function LogIn( {onLogin} ){
+export default function Login({ onLogin }){
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
 
-    const handle_login = () => {
-        onLogin();
+    function handleSubmit(event) {
+        event.preventDefault()
     }
+    
        
     return(   
             <>
@@ -24,31 +28,29 @@ export default function LogIn( {onLogin} ){
                              <div className="mb-3 mt-4">
                                  <h2 className="fw-bold text-uppercase mb-2">AMS</h2>
                                  <p className="mb-5">Please enter your email and password!</p>
-                                 <Form className="mb-3">
+                                 <Form className="mb-3" onSubmit={handleSubmit}>
                                  <Form.Group className="mb-3" controlId="formBasicEmail">
                                      <Form.Label className="text-center" htmlFor='email'>Email address</Form.Label>
                                      <Form.Control 
-                                    //    type="email" 
-                                    //    placeholder="Enter email" 
-                                    //    name='email' 
-                                    //    value={email}
-                                    //    onChange={(e) => setEmail(e.target.value)}
+                                       type="email" 
+                                       placeholder="Email" 
+                                       name='email'
+                                       onChange={e => setEmail(e.target.value)} 
                                      />
                                  </Form.Group>
     
                                  <Form.Group className="mb-3" controlId="formBasicPassword">
                                      <Form.Label htmlFor='password'>Password</Form.Label>
                                      <Form.Control 
-                                    //    type="password" 
-                                    //    placeholder="Password" 
-                                    //    name='password'
-                                    //    value={password}
-                                    //    onChange={(e) => setPassword(e.target.value)}
+                                       type="password" 
+                                       placeholder="Password" 
+                                       name='password'
+                                       onChange={e => setPassword(e.target.value)}
                                      />
                                  </Form.Group>
                                  {/* {error && <p className="text-danger">{error}</p>} */}
                                  <div className="d-grid">
-                                     <Button variant="primary" type="submit" onClick={handle_login}>
+                                     <Button variant="primary" type="submit" onClick={onLogin}>
                                      Login
                                      </Button>
                                  </div>

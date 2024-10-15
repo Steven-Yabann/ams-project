@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import "./css_files/sidebar.css";
 export default function Sidebar({ user_cat }){
+    
     const render_links = (category) => {
         switch(category){
             case 1:
                 return(
                     <>
-                        <h2>ADMIN FUNC</h2>
+                        <h2>ADMIN</h2>
                         <ul>
                         <Link to="/create-user">Create User</Link>
                         <Link to="/verify-fees">Verify Fees</Link>
@@ -18,7 +19,7 @@ export default function Sidebar({ user_cat }){
             case 2:
                 return (
                     <>
-                       <h2>LIB FUNC</h2>
+                       <h2>Library</h2>
                         <ul>
                         <Link to="/update-book-status">Update Book Status</Link>
                         <Link to="/manage-fines">Manage Fines</Link>
@@ -30,7 +31,7 @@ export default function Sidebar({ user_cat }){
             case 3:
                 return (
                     <>
-                        <h2>TEACH FUNC</h2>
+                        <h2>Teacher</h2>
                         <ul>
                         <Link to="/attendance">Attendance </Link>
                         <Link to="/marks">Performance</Link>
@@ -44,7 +45,7 @@ export default function Sidebar({ user_cat }){
                 return (
                     
                     <>
-                        <h2>STUDENT FUNC</h2>
+                        <h2>STUDENT</h2>
                         <ul>
                             <Link to="/student-dashboard">Profile</Link>
                             <Link to="/academic_records">Academic Records</Link>
@@ -53,19 +54,7 @@ export default function Sidebar({ user_cat }){
 
                         </ul>
                     </>
-                )
-            default:
-                return(
-                    <>
-                        <h2>ADMIN FUNC</h2>
-                        <ul>
-                        <Link to="/page1">Adm Function One</Link>
-                        <Link to="/page2">Adm Function Two</Link>
-                        <Link to="/page3">Adm Function Three</Link>
-                        <Link to="/page4">Adm Function Four</Link>
-                        </ul>
-                    </>
-                )    
+                )   
         }
     }
     return (
