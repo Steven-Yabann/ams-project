@@ -13,6 +13,7 @@ import Verify_fees from './components/admin/verify_fees';
 //global components
 import Login from './components/global/login';
 import Sidebar from './components/global/sidebar';
+import SignUp from './components/global/sign_in'
 
 //teacher components
 import TeacherDashboard from './components/teacher/attendance';
@@ -30,6 +31,7 @@ import AcademicRecords from './components/student/academic_records';
 import LibraryComponent from './components/student/library_components';
 import ProfileContent from './components/student/profile_content';
 import Attendance from './components/student/student_attendance';
+
 
 
 export default function IndexPage(){
@@ -74,7 +76,10 @@ export default function IndexPage(){
         </div>
       </div>
       ): (
+        <>
         <Login onLogin={handle_login}/>
+        <SignUp />
+        </>
       )
     }
     </Router>
