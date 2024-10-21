@@ -1,4 +1,5 @@
-const { Student, Teacher } = require('../models/studentModel');
+const Student= require('../models/studentModel');
+const Teacher= require('../models/teacherModel')
 
 // Function to create a student
 const createStudent = async (req, res) => {
@@ -31,6 +32,10 @@ const createStudent = async (req, res) => {
     }
 };
 
+const getStudent = async (req, res) => {
+    res.json({mssg: "Student response"})
+}
+
 // Function to create a teacher
 const createTeacher = async (req, res) => {
     console.log("Received request body:", req.body);
@@ -58,4 +63,9 @@ const createTeacher = async (req, res) => {
     }
 };
 
-module.exports = { createStudent, createTeacher };
+
+const getTeacher = async (req, res) => {
+    res.json({mssg: "Teacher response"})
+}
+
+module.exports = { createStudent, createTeacher, getStudent, getTeacher };

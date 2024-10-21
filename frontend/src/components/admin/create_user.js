@@ -53,13 +53,21 @@ export default function Create_user(){
     
         try {
             if (status === 'Student') {
-                // Make a POST request to the backend to create a student
-                const response = await axios.post('http://localhost:4000/api/admin/student', studentInfo);
-                console.log(response.data.message);
+                try {
+                    const response = await axios.post('http://localhost:4000/api/admin/student', employeeInfo);
+                    console.log(response.data.message);
+                  } catch (error) {
+                    console.error("There was an error creating the student:", error);
+                    // You can optionally display an error message to the user here
+                  }
             } else if (status === 'Employee') {
-                // Make a POST request to the backend to create an employee (teacher)
-                const response = await axios.post('http://localhost:4000/api/admin/teacher', employeeInfo);
-                console.log(response.data.message);
+                try {
+                    const response = await axios.post('http://localhost:4000/api/admin/teacher', employeeInfo);
+                    console.log(response.data.message);
+                  } catch (error) {
+                    console.error("There was an error creating the teacher:", error);
+                    // You can optionally display an error message to the user here
+                  }
             }
         } catch (error) {
             // Check if error.response exists
