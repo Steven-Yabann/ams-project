@@ -56,7 +56,7 @@ export default function IndexPage(){
               <Route path="/manage-fines" element={<ManageFines/>}/>
               <Route path="/view-book-records" element={<ViewBookRecords/>}/>
               <Route path="/payment-records" element={<PaymentRecords/>}/>
-              <Route path="create-user" element={<Create_user />}/>
+              <Route path="/create-user" element={<Create_user />}/>
               <Route path="/verify-fees" element={<Verify_fees />}/>
               <Route path="/update_calender" element={<UpdateCalender />}/>
               <Route path="/admin_settings" element={<AdminSettings />}/>

@@ -1,10 +1,11 @@
-const express = require('express')
-const Student = require("../models/studentModel")
+const express = require('express');
+const router = express.Router();
+const { createStudent, createTeacher } = require('../controllers/adminController');
 
-const router = express.Router()
+// Route to create a student
+router.post('/student', createStudent);
 
-router.post('/', async(req, res) => {
-    console.log(req.body)
-})
+// Route to create a teacher
+router.post('/teacher', createTeacher);
 
-module.exports = router
+module.exports = router;
