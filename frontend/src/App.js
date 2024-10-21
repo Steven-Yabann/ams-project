@@ -1,7 +1,7 @@
 
-import './App.css';
 import { useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
 
 //Admin components
 import AdminSettings from './components/admin/admin_settings';
@@ -49,7 +49,7 @@ export default function IndexPage(){
       {isAuthenticated ? (
         <div className="main-page">
         <div className="main-content">
-          <Sidebar user_cat={1} />
+          <Sidebar user_cat={4} />
           <div className="content-area">
             <Routes>
               <Route path="/update-book-status" element={<UpdateBookStatus/>}/>
