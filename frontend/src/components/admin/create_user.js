@@ -1,5 +1,6 @@
 import React from "react";
 import { useState } from "react";
+import axios from 'axios';
 import './css_files/create_user.css'
 
 export default function Create_user(){
@@ -46,18 +47,40 @@ export default function Create_user(){
         }
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-
-        if (status === 'Student') {
-            // Backend work for storing data to DB
-            console.log('Student details submitted successfully')
+    // Function to handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+    
+        try {
+            if (status === 'Student') {
+                try {
+                    const response = await axios.post('http://localhost:4000/api/admin/student', employeeInfo);
+                    console.log(response.data.message);
+                  } catch (error) {
+                    console.error("There was an error creating the student:", error);
+                    // You can optionally display an error message to the user here
+                  }
+            } else if (status === 'Employee') {
+                try {
+                    const response = await axios.post('http://localhost:4000/api/admin/teacher', employeeInfo);
+                    console.log(response.data.message);
+                  } catch (error) {
+                    console.error("There was an error creating the teacher:", error);
+                    // You can optionally display an error message to the user here
+                  }
+            }
+        } catch (error) {
+            // Check if error.response exists
+            if (error.response) {
+                console.error("There was an error submitting the form!", error.response.data);
+                alert(`Error: ${error.response.data.message || 'An error occurred'}`); // Optional: Show an alert with the error message
+            } else {
+                console.error("Error:", error.message);
+                alert("Error: Unable to connect to the server."); // Handle network errors
+            }
         }
-        else if(status === 'Employee') {
-            //...
-            console.log('Employee details submitted successfully')
-        }
-    }
+    };
+    
 
     return (
         <div className="form-container">
@@ -246,24 +269,33 @@ export default function Create_user(){
                     <br />
                     <label>
                         Role:
-                        <input
-                            type="text"
+                        <select
                             name="role"
                             value={employeeInfo.role}
                             onChange={(e) => handleInput(e, 'Employee')}
                             className="input-field"
-                        />
+                        >
+                            <option value="">Select Role</option>
+                            <option value="Intern">Intern</option>
+                            <option value="Permanent">Permanent</option>
+                        </select>
                     </label>
                     <br />
                     <label>
                         Department:
-                        <input
-                            type="text"
+                        <select
                             name="department"
                             value={employeeInfo.department}
                             onChange={(e) => handleInput(e, 'Employee')}
                             className="input-field"
-                        />
+                        >
+                            <option value="">Select Department</option>
+                            <option value="Maths">Maths</option>
+                            <option value="English">English</option>
+                            <option value="Science">Science</option>
+                            <option value="History">History</option>
+                            <option value="Geography">Geography</option>
+                        </select>
                     </label>
                     </div>
                     <br />
