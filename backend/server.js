@@ -1,13 +1,27 @@
+require('dotenv').config()
 const express = require('express')
-const morgan = require('morgan')
+const adminRoutes = require('./routes/admin')
+const libraryRoutes = require('./routes/library')
+const studentRoutes = require('./routes/student')
+const teacherRoutes = require('./routes/teacher')
+
+// express app
 const app = express()
 
-app.listen(5000)
-
-app.use(morgan('tiny'))
-
-app.get('/', (req, res) => {
-    res.send('<p>Hello world</p>')
+//middleware
+app.use((res, req, next) => {
+    console.log(req.path, req.method)
+    next()
 })
+
+
+//routes
+
+
+//listen for requests
+app.listen(process.env.PORT, () => {
+    console.log("Connected to server")
+})
+
 
 
