@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 // import '../css_files/update_book_status.css';
 const UpdateBookStatus = () => {
     const [bookId, setBookId] = useState('');
@@ -17,7 +18,7 @@ const UpdateBookStatus = () => {
 
     const handleUpdateStatus = async () => {
         try {
-            await bookService.updateStatus(bookId, status, isPaid, studentInfo);
+            await axios.updateStatus(bookId, status, isPaid, studentInfo);
             alert('Book status updated successfully');
         } catch (error) {
             console.error(error);
