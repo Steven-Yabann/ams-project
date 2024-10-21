@@ -9,6 +9,8 @@ const teacherRoutes = require('./routes/teacher')
 const app = express()
 
 //middleware
+app.use(express.json())
+
 app.use((res, req, next) => {
     console.log(req.path, req.method)
     next()
@@ -16,6 +18,10 @@ app.use((res, req, next) => {
 
 
 //routes
+app.use('/api/admin', adminRoutes)
+app.use('/api/library', libraryRoutes)
+app.use('/api/student', studentRoutes)
+app.use('/api/teacher', teacherRoutes)
 
 
 //listen for requests
