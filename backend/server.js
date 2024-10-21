@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const mongoose = require('mongoose')
 const adminRoutes = require('./routes/admin')
 const libraryRoutes = require('./routes/library')
 const studentRoutes = require('./routes/student')
@@ -23,11 +24,18 @@ app.use('/api/library', libraryRoutes)
 app.use('/api/student', studentRoutes)
 app.use('/api/teacher', teacherRoutes)
 
+//connect to db
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        app.listen(process.env.PORT, () => {
+            console.log("Connected to db & server")
+        })
+    })
+    .catch((err) => {
+        console.log(err)
+    })
 
-//listen for requests
-app.listen(process.env.PORT, () => {
-    console.log("Connected to server")
-})
+
 
 
 

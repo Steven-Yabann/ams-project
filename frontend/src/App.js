@@ -78,7 +78,7 @@ export default function IndexPage(){
       ): (
         <>
         <Login onLogin={handle_login}/>
-        <SignUp />
+        {/* <SignUp /> */}
         </>
       )
     }
