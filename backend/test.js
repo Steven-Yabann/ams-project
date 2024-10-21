@@ -7,12 +7,12 @@ const server = http.createServer((req, res) => {
     //set header content type
     res.setHeader('Content-Type', 'text/html')
 
-    res.write('<p>hello, ninjas</p>')
-    res.write('<p>hello, once again</p>')
+    res.write('../frontend/src/App.js')
+    // res.write('<p>hello, once again</p>')
     res.end()
 })
 
 
-server.listen(3000, 'localhost', () => {
-    console.log('Listening for requests on port 3000')
+server.listen(5000, 'localhost', () => {
+    console.log('Listening for requests on port 5000')
 })
