@@ -6,6 +6,7 @@ const adminRoutes = require('./routes/admin');
 const libraryRoutes = require('./routes/library');
 const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
+const calendarRoutes = require('./routes/calendar');
 
 // express app
 const app = express();
@@ -16,7 +17,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
 
 app.use((req, res, next) => {
-    console.log(req.path, req.method);
+    console.log(req.path, req.method, req.params);
     next();
 });
 
@@ -25,6 +26,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);
+app.use('/api/calendar', calendarRoutes);
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
 });
