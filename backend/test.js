@@ -1,18 +1,64 @@
-const http = require("http")
-const fs = require('fs')
+let unirest = require('unirest');
 
-const server = http.createServer((req, res) => {
-    console.log(req.url, req.method)
+function initiateSTKPush() {
+    let simulationReq = unirest('POST', 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest')
+    .headers({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 8mNgnvjTHYENKiw8AaHQdLWZXs99'
+    })
+    .send(JSON.stringify({
+        "BusinessShortCode": 174379,
+        "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjQxMDIyMjEyODIw",
+        "Timestamp": "20241022212820",
+        "TransactionType": "CustomerPayBillOnline",
+        "Amount": 1,
+        "PartyA": 254794879775,
+        "PartyB": 174379,
+        "PhoneNumber": 254794879775,
+        "CallBackURL": "https://mydomain.com/path",
+        "AccountReference": "Yabann Corp",
+        "TransactionDesc": "Payment to Steven Yabann" 
+    }))
+    .end(res => {
+        if (res.error) throw new Error(res.error);
+        console.log("STK Push response: ", res.raw_body);
 
-    //set header content type
-    res.setHeader('Content-Type', 'text/html')
+        let responseBody = JSON.parse(res.raw_body)
+        let CheckoutRequestID = responseBody.CheckoutRequestID
+        console.log( "checkoutID: ", CheckoutRequestID )
 
-    res.write('../frontend/src/App.js')
-    // res.write('<p>hello, once again</p>')
-    res.end()
-})
+        setTimeout(() => {
+            querySTKPushStatus(CheckoutRequestID)
+        }, 10000)
+    });
+
+}
 
 
-server.listen(5000, 'localhost', () => {
-    console.log('Listening for requests on port 5000')
-})
+function querySTKPushStatus( CheckoutRequestID ){
+
+    let queryReq = unirest('POST', 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query')
+    .headers({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer e8JRBgxBpkbQLEFD4mXkMBBG2RUM'
+    })
+    .send(JSON.stringify({
+        "BusinessShortCode": 174379,
+        "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjQxMDIyMjE1NTQ0",
+        "Timestamp": "20241022215544",
+        "CheckoutRequestID": CheckoutRequestID,
+    }))
+    .end(res => {
+        if (res.error) throw new Error(res.error);
+        console.log("STK Push Query Response: ", res.raw_body);
+        let responseBody = JSON.parse(res.raw_body)
+        let resultCode = responseBody.ResultCode
+        let resultMessage = responseBody.ResultDesc
+
+        console.log("Result code: ", resultCode)
+        console.log("Result mssg: ", resultMessage)
+    });
+
+}
+
+initiateSTKPush();
