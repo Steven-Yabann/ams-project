@@ -49,7 +49,7 @@ export default function IndexPage(){
       {isAuthenticated ? (
         <div className="main-page">
         <div className="main-content">
-          <Sidebar user_cat={4} />
+          <Sidebar user_cat={1} />
           <div className="content-area">
             <Routes>
               <Route path="/update-book-status" element={<UpdateBookStatus/>}/>
