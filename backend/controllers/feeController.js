@@ -6,17 +6,17 @@ let accessToken = "";
 // Generate an access token
 async function getAccessToken() {
     return new Promise((resolve, reject) => {
-        unirest("GET", "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials")
-            .headers({ 'Authorization': 'Basic b0pwUVg3alVTY2ZHdlpmVmR6cTR2WWxFZEdRYVpFR1hJdW45RlE0TFBnTURQTWY4OmRMdTczbmZVOE9wRDdJQWZxWWFQM3NDc1hGU2hxRzFvVWNCSG5nUmxZQVFQQkhWejVBRjY3b1JHWm5KWXk0TEY=' })
-            .end(res => {
-                if (res.error) {
-                    console.error("Error getting access token:", res.error);
-                    return reject(res.error);
-                }
-                accessToken = JSON.parse(res.raw_body).access_token;
-                console.log("Access Token:", accessToken);
-                resolve(accessToken);
-            });
+        let unirest = require('unirest');
+        let req = unirest('GET', 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials')
+        .headers({ 'Authorization': 'Basic b0pwUVg3alVTY2ZHdlpmVmR6cTR2WWxFZEdRYVpFR1hJdW45RlE0TFBnTURQTWY4OmRMdTczbmZVOE9wRDdJQWZxWWFQM3NDc1hGU2hxRzFvVWNCSG5nUmxZQVFQQkhWejVBRjY3b1JHWm5KWXk0TEY=' })
+        .send()
+        .end(res => {
+            if (res.error) throw new Error(res.error);
+            console.log(res.raw_body);
+            accessToken = JSON.parse(res.raw_body).access_token;
+            console.log("Access Token:", accessToken);
+            resolve(accessToken);
+        });
     });
 }
 
@@ -31,19 +31,20 @@ const initiatePayment = async (req, res) => {
             unirest("POST", "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest")
                 .headers({
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${accessToken}`
+                    "Authorization": `Bearer CKKdNB3EnMt0tSdf5ZwobXIUGuca`
                 })
                 .send(JSON.stringify({
                     "BusinessShortCode": 174379,
-                    "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjQxMDIyMjEyODIw", // Replace with your generated password
-                    "Timestamp": "20241028194157", // Use a dynamically generated timestamp in production
+                    "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjQxMDI4MjIyMzU1",
+                    "Timestamp": "20241028222355",
                     "TransactionType": "CustomerPayBillOnline",
                     "Amount": 1,
-                    "PartyA": phoneNumber,
+                    "PartyA": 254794879775,
                     "PartyB": 174379,
-                    "CallBackURL": "https://mydomain.com/path", // Update your callback URL here
-                    "AccountReference": "Yabann Corp",
-                    "TransactionDesc": "Payment for Fees"
+                    "PhoneNumber": phoneNumber,
+                    "CallBackURL": "https://mydomain.com/path",
+                    "AccountReference": "CompanyXLTD",
+                    "TransactionDesc": "Payment of X" 
                 }))
                 .end(res => res.error ? reject(res.error) : resolve(res.raw_body));
         });
@@ -85,7 +86,7 @@ const queryPaymentStatus = async (req, res) => {
             await Fee.findOneAndUpdate(
                 { studentId },
                 { feesPaid: 10000, isCleared: true, paymentDate: new Date() },
-                { new: true }
+                { new: true, upsert: true }
             );
             res.json({ message: "Payment successful", feeStatus: "Cleared" });
         } else {
@@ -101,7 +102,7 @@ const queryPaymentStatus = async (req, res) => {
 const updateFeeStatusInDb = async (req, res) => {
     try {
         const { studentId } = req.body;
-        const feeRecord = await Fee.findOneAndUpdate(
+        const feeRecord = await Fee.save(
             { studentId },
             { feesPaid: 10000, isCleared: true, paymentDate: new Date() },
             { new: true, upsert: true }

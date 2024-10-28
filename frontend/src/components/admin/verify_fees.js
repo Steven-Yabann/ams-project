@@ -40,7 +40,7 @@ export default function Verify_fees() {
                     setError("An error occurred while querying payment status.");
                     console.error(queryError);
                 }
-            }, 2500); // 2.5-second delay before querying status
+            }, 10000); // 2.5-second delay before querying status
 
         } catch (err) {
             setError("An error occurred while initiating payment.");
