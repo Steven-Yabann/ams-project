@@ -7,31 +7,34 @@ const libraryRoutes = require('./routes/library');
 const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
 const calendarRoutes = require('./routes/calendar');
+const feeRoutes = require('./routes/feeRoutes');
 
-// express app
+// Initialize express app
 const app = express();
 
-// middleware
+// Middleware
 app.use(cors());
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use((req, res, next) => {
-    console.log(req.path, req.method, req.params);
+    console.log(req.path, req.method, req.params, req.body);
     next();
 });
 
-// routes
+// Routes
+app.use('/api/verify-fees', feeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/calendar', calendarRoutes);
+
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
-// connect to db
+// Connect to DB and start server
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         app.listen(process.env.PORT, () => {

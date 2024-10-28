@@ -54,7 +54,7 @@ export default function Create_user(){
         try {
             if (status === 'Student') {
                 try {
-                    const response = await axios.post('http://localhost:4000/api/admin/student', employeeInfo);
+                    const response = await axios.post('http://localhost:4000/api/admin/student', studentInfo);
                     console.log(response.data.message);
                   } catch (error) {
                     console.error("There was an error creating the student:", error);

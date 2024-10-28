@@ -6,7 +6,7 @@ const { createStudent, createTeacher, getTeacher, getStu } = require('../control
 // Route to create a student
 router.post('/student', createStudent);
 
-router.get('/student', createStudent);
+// router.get('/student', createStudent);
 
 // Route to create a teacher
 router.post('/teacher', createTeacher);
