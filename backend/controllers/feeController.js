@@ -31,7 +31,7 @@ const initiatePayment = async (req, res) => {
             unirest("POST", "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest")
                 .headers({
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer CKKdNB3EnMt0tSdf5ZwobXIUGuca`
+                    "Authorization": `Bearer ${accessToken}`
                 })
                 .send(JSON.stringify({
                     "BusinessShortCode": 174379,
