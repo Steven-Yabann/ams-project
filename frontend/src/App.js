@@ -13,7 +13,6 @@ import Verify_fees from './components/admin/verify_fees';
 //global components
 import Login from './components/global/login';
 import Sidebar from './components/global/sidebar';
-import SignUp from './components/global/sign_in'
 
 //teacher components
 import TeacherDashboard from './components/teacher/attendance';

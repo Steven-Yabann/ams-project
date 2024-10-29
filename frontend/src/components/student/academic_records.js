@@ -1,62 +1,10 @@
+import axios from 'axios';
 import { LogOut, User } from 'lucide-react';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from 'react-bootstrap';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-//Test data
-const studentData = {
-  admissionNo: '5665',
-  name: 'Brandon Kigali',
-  class: '7 East',
-  subjects: ['Mathematics', 'Science', 'English', 'History', 'Geography'],
-};
-
-
-const graphData = [
-  { 
-    subject: 'Mathematics',
-    'Test 1': 85,
-    'Test 2': 90,
-    'Test 3': 88,
-    'Exam': 92
-  },
-  { 
-    subject: 'Science',
-    'Test 1': 78,
-    'Test 2': 85,
-    'Test 3': 92,
-    'Exam': 88
-  },
-  { 
-    subject: 'English',
-    'Test 1': 90,
-    'Test 2': 87,
-    'Test 3': 93,
-    'Exam': 95
-  },
-  { 
-    subject: 'History',
-    'Test 1': 75,
-    'Test 2': 80,
-    'Test 3': 82,
-    'Exam': 85
-  },
-  { 
-    subject: 'Geography',
-    'Test 1': 88,
-    'Test 2': 92,
-    'Test 3': 85,
-    'Exam': 90
-  },
-];
-
-const tableData = [
-  { subject: 'Mathematics', test1: 85, test2: 90, test3: 88, average: 87.67, exam: 92, finalGrade: 'A' },
-  { subject: 'Science', test1: 78, test2: 85, test3: 92, average: 85, exam: 88, finalGrade: 'B+' },
-  { subject: 'English', test1: 90, test2: 87, test3: 93, average: 90, exam: 95, finalGrade: 'A+' },
-  { subject: 'History', test1: 75, test2: 80, test3: 82, average: 79, exam: 85, finalGrade: 'B' },
-  { subject: 'Geography', test1: 88, test2: 92, test3: 85, average: 88.33, exam: 90, finalGrade: 'A' },
-];
+const API_BASE_URL = 'http://localhost:4000/api';
 
 const DetailedStudentProfile = ({ student }) => {
   const [profilePicture, setProfilePicture] = useState(null);
@@ -97,26 +45,10 @@ const DetailedStudentProfile = ({ student }) => {
         <h2 className="text-2xl font-bold mb-4">{student.name}</h2>
         <p className="mb-2"><strong>Admission No:</strong> {student.admissionNo}</p>
         <p className="mb-4"><strong>Class:</strong> {student.class}</p>
-        <h3 className="text-lg font-semibold mb-2">Registered Subjects</h3>
-        <ul className="list-disc pl-5">
-          {student.subjects.map((subject, index) => (
-            <li key={index} className="mb-1">{subject}</li>
-          ))}
-        </ul>
       </Card.Body>
     </Card>
   );
 };
-
-const Header = () => (
-  <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center mb-8">
-    <h1 className="text-2xl font-bold">Student Dashboard</h1>
-    <button className="logout-button bg-white text-blue-600 px-4 py-2 rounded-full flex items-center">
-      <LogOut size={20} className="mr-2" />
-      Log out
-    </button>
-  </header>
-);
 
 const AcademicGraph = ({ data }) => (
   <Card className="mb-8">
@@ -176,9 +108,60 @@ const GradesTable = ({ data }) => (
 );
 
 const AcademicRecords = () => {
+  const [studentData, setStudentData] = useState(null);
+  const [academicRecords, setAcademicRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAcademicRecords = async () => {
+      try {
+        // You'll need to get the studentId from your auth context or URL params
+        const studentId = 'your-student-id';
+        const response = await axios.get(`${API_BASE_URL}/academic/records`, {
+          params: {
+            studentId,
+            academicYear: '2024', // You might want to make these dynamic
+            term: '1'
+          }
+        });
+
+        setStudentData(response.data.student);
+        
+        // Transform the academic records for the graph
+        const graphData = response.data.academicRecords.map(record => ({
+          subject: record.subject,
+          'Test 1': record.test1,
+          'Test 2': record.test2,
+          'Test 3': record.test3,
+          'Exam': record.exam
+        }));
+
+        setAcademicRecords(response.data.academicRecords);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchAcademicRecords();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!studentData) return <div>No data available</div>;
+
   return (
     <div className="bg-light min-vh-100">
-      <Header />
+      <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Student Dashboard</h1>
+        <button className="logout-button bg-white text-blue-600 px-4 py-2 rounded-full flex items-center">
+          <LogOut size={20} className="mr-2" />
+          Log out
+        </button>
+      </header>
+      
       <main className="container py-4">
         <h1 className="text-3xl font-bold mb-4">Academic Records</h1>
         <div className="row">
@@ -186,8 +169,14 @@ const AcademicRecords = () => {
             <DetailedStudentProfile student={studentData} />
           </div>
           <div className="col-md-8">
-            <AcademicGraph data={graphData} />
-            <GradesTable data={tableData} />
+            <AcademicGraph data={academicRecords.map(record => ({
+              subject: record.subject,
+              'Test 1': record.test1,
+              'Test 2': record.test2,
+              'Test 3': record.test3,
+              'Exam': record.exam
+            }))} />
+            <GradesTable data={academicRecords} />
           </div>
         </div>
       </main>

@@ -7,6 +7,9 @@ const libraryRoutes = require('./routes/library');
 const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
 const calendarRoutes = require('./routes/calendar');
+const academicRoutes = require('./routes/academicRecordRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+
 
 // express app
 const app = express();
@@ -27,6 +30,8 @@ app.use('/api/library', libraryRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/academic', academicRoutes);
+app.use('/api/profile', profileRoutes);
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
 });
