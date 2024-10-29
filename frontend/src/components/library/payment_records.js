@@ -1,19 +1,9 @@
-<<<<<<< HEAD
+
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const PaymentRecords = ({ studentId }) => {
   const [books, setBooks] = useState([]);
-=======
-import { useState } from 'react';
-
-const PaymentRecords = ({ studentId }) => {
-  const [books, setBooks] = useState([
-    { id: 1, title: 'KCSE Made Familiar: Mathematics Workbook 2024 (New Edition)', status: 'bought', price: 500, fine: 0, paid: true }, // {{ edit_1 }}
-    { id: 2, title: 'Bembea ya Maisha ', status: 'borrowed', price: 600, fine: 100, paid: false }, // {{ edit_2 }} (Updated fine)
-    { id: 3, title: 'Secondary Chemistry Form 2', status: 'lost', price: 750, fine: 200, paid: false }, // {{ edit_3 }} (Updated fine)
-  ]);
->>>>>>> 7668b226e33eeb1f3fc862063065cf4e8d1ff8fe
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -80,8 +70,6 @@ const PaymentRecords = ({ studentId }) => {
   );
 };
 
-<<<<<<< HEAD
+
 export default PaymentRecords;
-=======
-export default PaymentRecords;
->>>>>>> 7668b226e33eeb1f3fc862063065cf4e8d1ff8fe
+

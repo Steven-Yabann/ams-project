@@ -86,7 +86,7 @@ const createStudent = async (req, res) => {
         await newUser.save();
 
         // Send email
-        await sendEmail(student_email,admissionNumber, 'Student', password);
+        await sendEmail(student_email, admissionNumber, 'Student', password);
 
         res.status(201).json({ message: "Student created successfully", student: newStudent, generatedPassword: password });
     } catch (error) {
@@ -130,7 +130,7 @@ const createTeacher = async (req, res) => {
         await newUser.save();
 
         // Send email
-        await sendEmail(email, 'Teacher', password);
+        await sendEmail(email, identification_no, 'Teacher', password);
 
         res.status(201).json({ message: "Teacher created successfully", teacher: newTeacher, generatedPassword: password });
     } catch (error) {

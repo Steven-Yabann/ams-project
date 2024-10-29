@@ -7,6 +7,7 @@ const libraryRoutes = require('./routes/book');
 const studentRoutes = require('./routes/student');
 const teacherRoutes = require('./routes/teacher');
 const calendarRoutes = require('./routes/calendar');
+const feeRoutes = require('./routes/feeRoutes');
 
 
 const authRoutes = require('./routes/auth');
