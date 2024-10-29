@@ -30,7 +30,7 @@ export default function Login({ onLogin }) {
 
     return (
         <Container fluid className="vh-100 d-flex justify-content-center align-items-center">
-            <Row className="w-100">
+            <Row className="justify-content-center w-100">
                 <Col md={6} lg={4}>
                     <Card className="shadow">
                         <Card.Body>
