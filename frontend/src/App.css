@@ -1,3 +1,6 @@
+/* App.css */
+
+/* General styles for the app */
 .App {
   text-align: center;
 }
@@ -35,4 +38,28 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 250px; /* Adjust the width as needed */
+  position: fixed; /* Make it fixed */
+  height: 100%; /* Full height */
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  background-color: #f4f4f4; /* Background color for visibility */
+}
+
+/* Content area styles */
+.content-area {
+  margin-left: 250px; /* Same as sidebar width */
+  padding: 20px; /* Optional padding for content */
+  background-color: #fff; /* Background color for the content */
+  min-height: 100vh; /* Ensure it takes the full height */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Ensure the overall layout takes the full height */
+html, body {
+  height: 100%; /* Full height for the body and html */
+  margin: 0; /* Remove default margin */
 }

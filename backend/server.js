@@ -9,6 +9,9 @@ const teacherRoutes = require('./routes/teacher');
 const calendarRoutes = require('./routes/calendar');
 const feeRoutes = require('./routes/feeRoutes');
 
+
+const authRoutes = require('./routes/auth');
+
 // Initialize express app
 const app = express();
 
@@ -23,6 +26,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/verify-fees', feeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/library', libraryRoutes);

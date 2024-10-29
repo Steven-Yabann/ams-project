@@ -1,22 +1,23 @@
 import { Link } from "react-router-dom";
 import "./css_files/sidebar.css";
 export default function Sidebar({ user_cat }){
+
     
     const render_links = (category) => {
         switch(category){
-            case 1:
+            case "admin":
                 return(
                     <>
                         <h2>ADMIN</h2>
                         <ul>
                         <Link to="/create-user">Create User</Link>
-                        <Link to="/verify-fees">Verify Fees</Link>
+                        <Link to="/verify-fees">Pay Fees</Link>
                         <Link to="/update_calender">Update Calender</Link>
                         <Link to="/admin_settings">Settings</Link>
                         </ul>
                     </>
                 )
-            case 2:
+            case "library":
                 return (
                     <>
                        <h2>Library</h2>
@@ -28,7 +29,7 @@ export default function Sidebar({ user_cat }){
                         </ul> 
                     </>
                 )
-            case 3:
+            case "teacher":
                 return (
                     <>
                         <h2>Teacher</h2>
@@ -41,7 +42,7 @@ export default function Sidebar({ user_cat }){
                     </>
                 )
 
-            case 4:
+            case "student":
                 return (
                     
                     <>
