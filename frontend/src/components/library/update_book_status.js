@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-// import '../css_files/update_book_status.css';
+import './css_files/update_book_status.css';
 const UpdateBookStatus = () => {
     const [bookId, setBookId] = useState('');
     const [status, setStatus] = useState('');
@@ -18,12 +18,14 @@ const UpdateBookStatus = () => {
 
     const handleUpdateStatus = async () => {
         try {
-            await axios.updateStatus(bookId, status, isPaid, studentInfo);
-            alert('Book status updated successfully');
+            const response = await axios.put(`http://localhost:4000/api/books/books/${bookId}/update`, { status, borrowedBy: studentInfo, dueDate });
+            if (response.status === 200) {
+                alert('Book status updated successfully');
+            }
         } catch (error) {
             console.error(error);
         }
-    };
+    };    
 
     const handleInputChange = (e) => {
         setStudentInfo({

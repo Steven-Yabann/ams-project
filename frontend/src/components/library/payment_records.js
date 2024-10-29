@@ -1,17 +1,31 @@
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const PaymentRecords = ({ studentId }) => {
-  const [books, setBooks] = useState([
-    { id: 1, title: 'KCSE Made Familiar: Mathematics Workbook 2024 (New Edition)', status: 'bought', price: 50, fine: 0, paid: true },
-    { id: 2, title: 'Bembea ya Maisha ', status: 'borrowed', price: 0, fine: 5, paid: false },
-    { id: 3, title: 'Secondary Chemistry Form 2', status: 'lost', price: 40, fine: 50, paid: false },
-  ]);
+  const [books, setBooks] = useState([]);
 
-  const handlePayment = (bookId) => {
-    setBooks(books.map(book => 
-      book.id === bookId ? { ...book, paid: true } : book
-    ));
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await axios.get(`http://localhost:4000/api/books/borrowed/${studentId}`);
+        setBooks(response.data.books);
+      } catch (error) {
+        console.error("Error fetching borrowed books:", error);
+      }
+    };
+
+    fetchBooks();
+  }, [studentId]);
+
+  const handlePayment = async (bookId) => {
+    try {
+      await axios.put(`/api/books/${bookId}/mark-paid`);
+      setBooks(books.map(book => 
+        book.id === bookId ? { ...book, paid: true } : book
+      ));
+    } catch (error) {
+      console.error("Error updating payment:", error);
+    }
   };
 
   const calculateTotal = (book) => {
@@ -55,4 +69,4 @@ const PaymentRecords = ({ studentId }) => {
   );
 };
 
-export default PaymentRecords;
+export default PaymentRecords;
