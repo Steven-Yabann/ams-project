@@ -1,35 +1,33 @@
 import React, { useEffect, useState } from 'react';
-//import axion
-//import axion
-// import '../css_files/manage_fines.css';
+import axios from 'axios';
+
 const ManageFines = () => {
-    const [fines, setFines] = useState([]);
+    const [borrowedBooks, setBorrowedBooks] = useState([]);
     const [lostBooks, setLostBooks] = useState([]);
-    const [costofbook, setcostofbook] = useState(0);
     const [daysDelayed, setDaysDelayed] = useState(0);
     const [fineAmount, setFineAmount] = useState(0);
     const [bookCost, setBookCost] = useState(0);
 
-    const fetchFines = async () => {
+    const fetchFinesData = async () => {
         try {
-            const response = await bookService.calculateFines();
-            setFines(response.data.borrowedBooks);
+            const response = await axios.get('http://localhost:4000/api/books/fines');
+            setBorrowedBooks(response.data.borrowedBooks);
             setLostBooks(response.data.lostBooks);
         } catch (error) {
-            console.error(error);
+            console.error("Error fetching fine data:", error);
         }
     };
 
     useEffect(() => {
-        fetchFines();
+        fetchFinesData();
     }, []);
 
     const handleFineCalculation = () => {
-        setFineAmount(daysDelayed * 50); // Assuming a fine rate of $50 per day delayed
+        setFineAmount(daysDelayed * 50); // Fine rate, e.g., $50 per day
     };
 
     const handleBookCostCalculation = () => {
-        setBookCost(costofbook * 1.5); // Example: Assuming each lost book costs $1000 for now
+        setBookCost(bookCost * 1.5); // E.g., assume lost book cost is 1.5 times its original price
     };
 
     return (
@@ -45,17 +43,17 @@ const ManageFines = () => {
                             <th>Return Status</th>
                             <th>Fine Amount</th>
                             <th>Days Delayed</th>
-                            <th>Payment History</th>
+                            <th>Payment Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {fines.map((fine, index) => (
+                        {borrowedBooks.map((book, index) => (
                             <tr key={index}>
-                                <td>{fine.title}</td>
-                                <td>{fine.returnStatus}</td>
-                                <td>{fine.fineAmount}</td>
-                                <td>{fine.daysDelayed}</td>
-                                <td><a href="#">view</a></td>
+                                <td>{book.title}</td>
+                                <td>{book.status}</td>
+                                <td>${book.fine.toFixed(2)}</td>
+                                <td>{book.daysDelayed}</td>
+                                <td>{book.paid ? 'Paid' : 'Unpaid'}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -70,16 +68,14 @@ const ManageFines = () => {
                             <th>Book Title</th>
                             <th>Cost</th>
                             <th>Paid</th>
-                            <th>Payment History</th>
                         </tr>
                     </thead>
                     <tbody>
                         {lostBooks.map((book, index) => (
                             <tr key={index}>
                                 <td>{book.title}</td>
-                                <td>{book.cost}</td>
+                                <td>${book.cost.toFixed(2)}</td>
                                 <td>{book.paid ? 'Yes' : 'No'}</td>
-                                <td><a href="#">view</a></td>
                             </tr>
                         ))}
                     </tbody>
@@ -97,21 +93,21 @@ const ManageFines = () => {
                     placeholder='No of days delayed'
                 />
                 <button onClick={handleFineCalculation}>Calculate</button>
-                <p>Fine Amount: ${fineAmount}</p>
+                <p>Fine Amount: ${fineAmount.toFixed(2)}</p>
             </div>
 
             <div className="calculate-book-cost">
                 <h3>Calculate Cost of Lost Book</h3>
-                <label htmlFor="costofbook">Cost of book lost</label>
+                <label htmlFor="bookCost">Cost of book lost</label>
                 <input 
                     type="number" 
-                    id="costofbook" 
-                    value={costofbook} 
-                    onChange={(e) => setcostofbook(e.target.value)} 
+                    id="bookCost" 
+                    value={bookCost} 
+                    onChange={(e) => setBookCost(e.target.value)} 
                     placeholder='Cost of book lost'
                 />
                 <button onClick={handleBookCostCalculation}>Calculate Cost to be paid</button>
-                <p>Book Cost: ${bookCost}</p>
+                <p>Book Cost: ${bookCost.toFixed(2)}</p>
             </div>
         </div>
     );
