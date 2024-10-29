@@ -32,7 +32,7 @@ import LibraryComponent from './components/student/library_components';
 import ProfileContent from './components/student/profile_content';
 import Attendance from './components/student/student_attendance';
 
-
+//phillipo na try
 
 export default function IndexPage(){
 
