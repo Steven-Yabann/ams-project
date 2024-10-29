@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 //import axion
-//import axion
+//import axion 
 // import '../css_files/manage_fines.css';
 const ManageFines = () => {
     const [fines, setFines] = useState([]);
@@ -13,7 +13,13 @@ const ManageFines = () => {
     const fetchFines = async () => {
         try {
             const response = await bookService.calculateFines();
-            setFines(response.data.borrowedBooks);
+            const updatedFines = response.data.borrowedBooks.map(fine => {
+                const daysDelayed = fine.daysDelayed; // Assuming this is available
+                const fineRate = 50; // Assuming a fine rate of KES 50 per day delayed
+                const calculatedFine = daysDelayed * fineRate;
+                return { ...fine, calculatedFine }; // Add calculated fine to each fine object
+            });
+            setFines(updatedFines);
             setLostBooks(response.data.lostBooks);
         } catch (error) {
             console.error(error);
@@ -24,17 +30,27 @@ const ManageFines = () => {
         fetchFines();
     }, []);
 
-    const handleFineCalculation = () => {
-        setFineAmount(daysDelayed * 50); // Assuming a fine rate of $50 per day delayed
-    };
+    // Automatically calculate fine amount based on days delayed
+    useEffect(() => {
+        const fineRate = 50; // Assuming a fine rate of KES 50 per day delayed
+        setFineAmount(daysDelayed * fineRate);
+    }, [daysDelayed]);
 
-    const handleBookCostCalculation = () => {
-        setBookCost(costofbook * 1.5); // Example: Assuming each lost book costs $1000 for now
-    };
+    // Automatically calculate book cost based on original cost
+    useEffect(() => {
+        setBookCost(parseFloat(costofbook) + 200); // Add 200 KES to the original cost of the book
+    }, [costofbook]);
+
+    // Calculate total fines for display
+    const totalFines = fines.reduce((total, fine) => total + fine.calculatedFine, 0);
 
     return (
         <div className="content">
             <h2>Manage Fines</h2>
+
+            <div className="total-fines">
+                <h3>Total Fines to be Paid: KES {totalFines}</h3> {/* Display total fines */}
+            </div>
 
             <div className="borrowed-books">
                 <h3>Borrowed Books</h3>
@@ -43,7 +59,7 @@ const ManageFines = () => {
                         <tr>
                             <th>Book Title</th>
                             <th>Return Status</th>
-                            <th>Fine Amount</th>
+                            <th>Fine Amount (KES)</th>
                             <th>Days Delayed</th>
                             <th>Payment History</th>
                         </tr>
@@ -53,7 +69,7 @@ const ManageFines = () => {
                             <tr key={index}>
                                 <td>{fine.title}</td>
                                 <td>{fine.returnStatus}</td>
-                                <td>{fine.fineAmount}</td>
+                                <td>{fine.calculatedFine}</td> {/* Display calculated fine in KES */}
                                 <td>{fine.daysDelayed}</td>
                                 <td><a href="#">view</a></td>
                             </tr>
@@ -68,7 +84,7 @@ const ManageFines = () => {
                     <thead>
                         <tr>
                             <th>Book Title</th>
-                            <th>Cost</th>
+                            <th>Cost (KES)</th>
                             <th>Paid</th>
                             <th>Payment History</th>
                         </tr>
@@ -96,8 +112,7 @@ const ManageFines = () => {
                     onChange={(e) => setDaysDelayed(e.target.value)} 
                     placeholder='No of days delayed'
                 />
-                <button onClick={handleFineCalculation}>Calculate</button>
-                <p>Fine Amount: ${fineAmount}</p>
+                <p>Fine Amount: KES {fineAmount}</p> {/* Display fine amount in KES */}
             </div>
 
             <div className="calculate-book-cost">
@@ -110,8 +125,7 @@ const ManageFines = () => {
                     onChange={(e) => setcostofbook(e.target.value)} 
                     placeholder='Cost of book lost'
                 />
-                <button onClick={handleBookCostCalculation}>Calculate Cost to be paid</button>
-                <p>Book Cost: ${bookCost}</p>
+                <p>Book Cost: KES {bookCost}</p> {/* Display book cost in KES */}
             </div>
         </div>
     );
