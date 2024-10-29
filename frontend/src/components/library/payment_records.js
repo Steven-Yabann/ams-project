@@ -1,8 +1,19 @@
+<<<<<<< HEAD
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const PaymentRecords = ({ studentId }) => {
   const [books, setBooks] = useState([]);
+=======
+import { useState } from 'react';
+
+const PaymentRecords = ({ studentId }) => {
+  const [books, setBooks] = useState([
+    { id: 1, title: 'KCSE Made Familiar: Mathematics Workbook 2024 (New Edition)', status: 'bought', price: 500, fine: 0, paid: true }, // {{ edit_1 }}
+    { id: 2, title: 'Bembea ya Maisha ', status: 'borrowed', price: 600, fine: 100, paid: false }, // {{ edit_2 }} (Updated fine)
+    { id: 3, title: 'Secondary Chemistry Form 2', status: 'lost', price: 750, fine: 200, paid: false }, // {{ edit_3 }} (Updated fine)
+  ]);
+>>>>>>> 7668b226e33eeb1f3fc862063065cf4e8d1ff8fe
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -40,9 +51,9 @@ const PaymentRecords = ({ studentId }) => {
           <tr>
             <th>Book Title</th>
             <th>Status</th>
-            <th>Book Price</th>
-            <th>Fine</th>
-            <th>Total Due</th>
+            <th>Book Price (KES)</th> {/* {{ edit_4 }} */}
+            <th>Fine (KES)</th> {/* {{ edit_5 }} */}
+            <th>Total Due (KES)</th> {/* {{ edit_6 }} */}
             <th>Paid</th>
             <th>Action</th>
           </tr>
@@ -52,9 +63,9 @@ const PaymentRecords = ({ studentId }) => {
             <tr key={book.id}>
               <td>{book.title}</td>
               <td>{book.status}</td>
-              <td>${book.price.toFixed(2)}</td>
-              <td>${book.fine.toFixed(2)}</td>
-              <td>${calculateTotal(book).toFixed(2)}</td>
+              <td>{book.price.toLocaleString()} KES</td> {/* {{ edit_7 }} */}
+              <td>{book.fine.toLocaleString()} KES</td> {/* {{ edit_8 }} */}
+              <td>{calculateTotal(book).toLocaleString()} KES</td> {/* {{ edit_9 }} */}
               <td>{book.paid ? 'Yes' : 'No'}</td>
               <td>
                 {!book.paid && (
@@ -69,4 +80,8 @@ const PaymentRecords = ({ studentId }) => {
   );
 };
 
+<<<<<<< HEAD
 export default PaymentRecords;
+=======
+export default PaymentRecords;
+>>>>>>> 7668b226e33eeb1f3fc862063065cf4e8d1ff8fe

@@ -13,7 +13,6 @@ import Verify_fees from './components/admin/verify_fees';
 //global components
 import Login from './components/global/login';
 import Sidebar from './components/global/sidebar';
-import SignUp from './components/global/sign_in'
 
 //teacher components
 import TeacherDashboard from './components/teacher/attendance';
@@ -49,7 +48,7 @@ export default function IndexPage(){
       {isAuthenticated ? (
         <div className="main-page">
         <div className="main-content">
-          <Sidebar user_cat={1} />
+          <Sidebar user_cat={3} />
           <div className="content-area">
             <Routes>
               <Route path="/update-book-status" element={<UpdateBookStatus/>}/>
