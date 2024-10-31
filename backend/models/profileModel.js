@@ -1,12 +1,14 @@
 // profileModel.js
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+// Define the schema for the Profile model
 const profileSchema = new Schema({
     // Basic Info
-    userId: { type: Schema.Types.ObjectId, required: true, unique: true, ref: 'Student' },
+    admissionNumber: { type: Schema.Types.ObjectId, required: true, unique: true, ref: 'Student' },
     profilePicture: { type: String },
-    
+
     // Personal Details
     dob: { type: Date },
     nationality: { type: String },
@@ -40,5 +42,6 @@ const profileSchema = new Schema({
     }]
 }, { timestamps: true });
 
+// Create and export the Profile model
 const Profile = mongoose.model('Profile', profileSchema);
 module.exports = Profile;

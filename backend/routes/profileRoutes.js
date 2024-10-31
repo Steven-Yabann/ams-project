@@ -1,8 +1,9 @@
 // profileRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
+//const path = require('path');
 const {
     getProfile,
     createProfile,
@@ -12,6 +13,7 @@ const {
 } = require('../controllers/ProfileController');
 
 // Configure multer for file uploads
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/profile-pictures');
@@ -21,7 +23,9 @@ const storage = multer.diskStorage({
     }
 });
 
+// Multer instance with file size and type constraints
 const upload = multer({
+
     storage: storage,
     limits: {
         fileSize: 1024 * 1024 * 5 // 5MB limit
@@ -38,11 +42,11 @@ const upload = multer({
     }
 });
 
-// Routes
-router.get('/:userId', getProfile);
-router.post('/:userId', createProfile);
-router.put('/:userId', updateProfile);
-router.put('/:userId/picture', upload.single('profilePicture'), updateProfilePicture);
-router.put('/:userId/guardian', updateGuardianInfo);
+// Define profile routes
+router.get('/admissionNumber', getProfile); // Route to get profile by userId
+router.post('/admissionNumber', createProfile); // Route to create a new profile
+router.put('/admissionNumber', updateProfile); // Route to update existing profile
+router.put('/admissionNumber/picture', upload.single('profilePicture'), updateProfilePicture); // Route to update profile picture
+router.put('/admissionNumber/guardian', updateGuardianInfo); // Route to update guardian information
 
 module.exports = router;

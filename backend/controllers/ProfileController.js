@@ -1,43 +1,46 @@
 // profileController.js
-const Profile = require('../models/profileModel');
-const Student = require('../models/studentModel'); // Already exists in your project
 
-// Get profile
+const Profile = require('../models/profileModel');
+const Student = require('../models/studentModel'); // Ensure Student model is correctly imported
+
+// Get profile by userId
 const getProfile = async (req, res) => {
     try {
-        const userId = req.params.userId;
-        const profile = await Profile.findOne({ userId }).populate('userId');
-        
+        const admissionNumber = req.params.admissionNumber;
+        if (!admissionNumber) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+        const profile = await Profile.findOne({ admissionNumber }).populate('userId');
         if (!profile) {
             return res.status(404).json({ message: "Profile not found" });
         }
-        
         res.status(200).json(profile);
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
 
-// Create profile
+
+// Create a new profile for a user
 const createProfile = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const admissionNumber = req.params.userId;
         
         // Check if profile already exists
-        const existingProfile = await Profile.findOne({ userId });
+        const existingProfile = await Profile.findOne({ admissionNumber });
         if (existingProfile) {
             return res.status(400).json({ message: "Profile already exists for this user" });
         }
 
         // Check if student exists
-        const student = await Student.findById(userId);
+        const student = await Student.findById(admissionNumber);
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }
 
         const newProfile = new Profile({
-            userId,
-            email: student.student_email, // Use email from student record
+            admissionNumber,
+            email: student.student_email, // Set email from student data
             ...req.body
         });
 
@@ -51,15 +54,15 @@ const createProfile = async (req, res) => {
     }
 };
 
-// Update profile
+// Update profile for a user
 const updateProfile = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const admissionNumber = req.params.admissionNumber;
         const updates = req.body;
 
         // Find and update the profile
         const profile = await Profile.findOneAndUpdate(
-            { userId },
+            { admissionNumber },
             { $set: updates },
             { new: true, runValidators: true }
         );
@@ -80,7 +83,7 @@ const updateProfile = async (req, res) => {
 // Update profile picture
 const updateProfilePicture = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const admissionNumber = req.params.admissionNumber;
         const profilePicture = req.file ? req.file.path : null;
 
         if (!profilePicture) {
@@ -88,7 +91,7 @@ const updateProfilePicture = async (req, res) => {
         }
 
         const profile = await Profile.findOneAndUpdate(
-            { userId },
+            { admissionNumber },
             { $set: { profilePicture } },
             { new: true }
         );
@@ -103,14 +106,14 @@ const updateProfilePicture = async (req, res) => {
     }
 };
 
-// Update guardian info
+// Update guardian information for a user
 const updateGuardianInfo = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const admissionNumber = req.params.admissionNumber;
         const guardianInfo = req.body;
 
         const profile = await Profile.findOneAndUpdate(
-            { userId },
+            { admissionNumber },
             { $set: { guardianInfo } },
             { new: true, runValidators: true }
         );
@@ -128,6 +131,7 @@ const updateGuardianInfo = async (req, res) => {
     }
 };
 
+// Export the controller functions
 module.exports = {
     getProfile,
     createProfile,
