@@ -1,4 +1,3 @@
-// models/profileModel.js
 const mongoose = require('mongoose');
 
 // Schema for guardian information
@@ -50,6 +49,11 @@ const profileSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
   profilePicture: {
     type: String,
     default: null
@@ -92,8 +96,11 @@ const profileSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true
+    required: true,
+    trim: true,
+    lowercase: true
   },
+  // Academic fields
   classTeacher: {
     type: String,
     trim: true
@@ -119,6 +126,7 @@ const profileSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Guardian information
   guardianInfo: [guardianSchema]
 }, {
   timestamps: true

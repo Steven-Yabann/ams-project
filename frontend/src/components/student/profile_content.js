@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, Form } from 'react-bootstrap';
+import { Alert, Button, Card, Form, Nav, Tab } from 'react-bootstrap';
 
 const API_BASE_URL = 'http://localhost:4000/api/profile';
 
@@ -72,7 +72,7 @@ const ProfileContent = () => {
           />
         </div>
         <div className="col-md-8">
-          <AcademicDetails 
+          <DetailsTabs 
             profileData={profileData} 
             setProfileData={setProfileData}
             setSuccessMessage={setSuccessMessage}
@@ -188,6 +188,56 @@ const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError 
   );
 };
 
+const DetailsTabs = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
+  return (
+    <Tab.Container defaultActiveKey="academic">
+      <Card>
+        <Card.Header>
+          <Nav variant="tabs">
+            <Nav.Item>
+              <Nav.Link eventKey="academic">Academic Details</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="personal">Personal Details</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="guardian">Guardian Details</Nav.Link>
+            </Nav.Item>
+          </Nav>
+        </Card.Header>
+        <Card.Body>
+          <Tab.Content>
+            <Tab.Pane eventKey="academic">
+              <AcademicDetails 
+                profileData={profileData}
+                setProfileData={setProfileData}
+                setSuccessMessage={setSuccessMessage}
+                setError={setError}
+              />
+            </Tab.Pane>
+            <Tab.Pane eventKey="personal">
+              <PersonalDetails 
+                profileData={profileData}
+                setProfileData={setProfileData}
+                setSuccessMessage={setSuccessMessage}
+                setError={setError}
+              />
+            </Tab.Pane>
+            <Tab.Pane eventKey="guardian">
+              <GuardianDetails 
+                profileData={profileData}
+                setProfileData={setProfileData}
+                setSuccessMessage={setSuccessMessage}
+                setError={setError}
+              />
+            </Tab.Pane>
+          </Tab.Content>
+        </Card.Body>
+      </Card>
+    </Tab.Container>
+  );
+};
+
 const AcademicDetails = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [academicData, setAcademicData] = useState({
@@ -221,35 +271,159 @@ const AcademicDetails = ({ profileData, setProfileData, setSuccessMessage, setEr
   };
 
   return (
-    <Card>
-      <Card.Body>
-        <h3 className="mb-4">Academic Details</h3>
-        <Form>
-          {Object.entries(academicData).map(([field, value]) => (
-            <Form.Group key={field} controlId={field} className="mb-3">
-              <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
-              <Form.Control
-                type="text"
-                name={field}
-                value={value}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </Form.Group>
-          ))}
-          <div className="d-flex justify-content-between">
-            <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
-              {isEditing ? 'Cancel' : 'Edit Details'}
-            </Button>
-            {isEditing && (
-              <Button variant="primary" onClick={handleSave}>
-                Save Changes
-              </Button>
-            )}
-          </div>
-        </Form>
-      </Card.Body>
-    </Card>
+    <Form>
+      {Object.entries(academicData).map(([field, value]) => (
+        <Form.Group key={field} controlId={field} className="mb-3">
+          <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
+          <Form.Control
+            type="text"
+            name={field}
+            value={value}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+          />
+        </Form.Group>
+      ))}
+      <div className="d-flex justify-content-between">
+        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? 'Cancel' : 'Edit Details'}
+        </Button>
+        {isEditing && (
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        )}
+      </div>
+    </Form>
+  );
+};
+
+const PersonalDetails = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [personalData, setPersonalData] = useState({
+    religion: profileData?.religion || '',
+    languages: profileData?.languages?.join(', ') || '',
+    city: profileData?.city || '',
+    country: profileData?.country || '',
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPersonalData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const admissionNumber = sessionStorage.getItem('admissionNumber');
+      const formattedData = {
+        ...personalData,
+        languages: personalData.languages.split(',').map(lang => lang.trim())
+      };
+      
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`,
+        formattedData
+      );
+      
+      setProfileData(response.data.profile);
+      setIsEditing(false);
+      setSuccessMessage('Personal details updated successfully');
+    } catch (error) {
+      setError('Error updating personal details: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  return (
+    <Form>
+      {Object.entries(personalData).map(([field, value]) => (
+        <Form.Group key={field} controlId={field} className="mb-3">
+          <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
+          <Form.Control
+            type="text"
+            name={field}
+            value={value}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            placeholder={field === 'languages' ? 'Enter languages separated by commas' : `Enter ${field}`}
+          />
+        </Form.Group>
+      ))}
+      <div className="d-flex justify-content-between">
+        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? 'Cancel' : 'Edit Details'}
+        </Button>
+        {isEditing && (
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        )}
+      </div>
+    </Form>
+  );
+};
+
+const GuardianDetails = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [guardianData, setGuardianData] = useState({
+    parentName: profileData?.guardianInfo?.[0]?.parentName || '',
+    relationship: profileData?.guardianInfo?.[0]?.relationship || '',
+    contactNumber: profileData?.guardianInfo?.[0]?.contactNumber || '',
+    email: profileData?.guardianInfo?.[0]?.email || '',
+    occupation: profileData?.guardianInfo?.[0]?.occupation || '',
+    address: profileData?.guardianInfo?.[0]?.address || '',
+    emergencyContact: profileData?.guardianInfo?.[0]?.emergencyContact || '',
+    alternativeContact: profileData?.guardianInfo?.[0]?.alternativeContact || ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setGuardianData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const admissionNumber = sessionStorage.getItem('admissionNumber');
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`,
+        { guardianInfo: [guardianData] }
+      );
+      
+      setProfileData(response.data.profile);
+      setIsEditing(false);
+      setSuccessMessage('Guardian details updated successfully');
+    } catch (error) {
+      setError('Error updating guardian details: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  return (
+    <Form>
+      {Object.entries(guardianData).map(([field, value]) => (
+        <Form.Group key={field} controlId={field} className="mb-3">
+          <Form.Label>
+            {field.split(/(?=[A-Z])/).join(' ').charAt(0).toUpperCase() + 
+             field.split(/(?=[A-Z])/).join(' ').slice(1)}
+          </Form.Label>
+          <Form.Control
+            type={field === 'email' ? 'email' : 'text'}
+            name={field}
+            value={value}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+          />
+        </Form.Group>
+      ))}
+      <div className="d-flex justify-content-between">
+        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? 'Cancel' : 'Edit Details'}
+        </Button>
+        {isEditing && (
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        )}
+      </div>
+    </Form>
   );
 };
 
