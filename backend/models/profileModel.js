@@ -1,47 +1,128 @@
-// profileModel.js
-
+// models/profileModel.js
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-// Define the schema for the Profile model
-const profileSchema = new Schema({
-    // Basic Info
-    admissionNumber: { type: Schema.Types.ObjectId, required: true, unique: true, ref: 'Student' },
-    profilePicture: { type: String },
+// Schema for guardian information
+const guardianSchema = new mongoose.Schema({
+  parentName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  relationship: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  contactNumber: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true
+  },
+  occupation: {
+    type: String,
+    trim: true
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  emergencyContact: {
+    type: String,
+    trim: true
+  },
+  alternativeContact: {
+    type: String,
+    trim: true
+  }
+});
 
-    // Personal Details
-    dob: { type: Date },
-    nationality: { type: String },
-    religion: { type: String },
-    gender: { type: String },
-    languages: [{ type: String }],
-    homeAddress: { type: String },
-    city: { type: String },
-    country: { type: String },
-    phone: { type: String },
-    email: { type: String, required: true },
+// Schema for the main profile
+const profileSchema = new mongoose.Schema({
+  admissionNumber: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Student',
+    required: true,
+    unique: true
+  },
+  profilePicture: {
+    type: String,
+    default: null
+  },
+  dob: {
+    type: Date
+  },
+  nationality: {
+    type: String,
+    trim: true
+  },
+  religion: {
+    type: String,
+    trim: true
+  },
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other'],
+    trim: true
+  },
+  languages: [{
+    type: String,
+    trim: true
+  }],
+  homeAddress: {
+    type: String,
+    trim: true
+  },
+  city: {
+    type: String,
+    trim: true
+  },
+  country: {
+    type: String,
+    trim: true
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true
+  },
+  classTeacher: {
+    type: String,
+    trim: true
+  },
+  class: {
+    type: String,
+    trim: true
+  },
+  yearOfStudy: {
+    type: String,
+    trim: true
+  },
+  gpa: {
+    type: Number,
+    min: 0,
+    max: 4
+  },
+  yearOfAdmission: {
+    type: String,
+    trim: true
+  },
+  graduation: {
+    type: String,
+    trim: true
+  },
+  guardianInfo: [guardianSchema]
+}, {
+  timestamps: true
+});
 
-    // Academic Details
-    classTeacher: { type: String },
-    class: { type: String },
-    yearOfStudy: { type: String },
-    gpa: { type: Number },
-    yearOfAdmission: { type: String },
-    graduation: { type: String },
-
-    // Guardian Details
-    guardianInfo: [{
-        parentName: { type: String },
-        relationship: { type: String },
-        contactNumber: { type: String },
-        email: { type: String },
-        occupation: { type: String },
-        address: { type: String },
-        emergencyContact: { type: String },
-        alternativeContact: { type: String }
-    }]
-}, { timestamps: true });
-
-// Create and export the Profile model
 const Profile = mongoose.model('Profile', profileSchema);
 module.exports = Profile;

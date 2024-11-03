@@ -1,68 +1,64 @@
-// profileController.js
-
+// 3. controllers/ProfileController.js
 const Profile = require('../models/profileModel');
-const Student = require('../models/studentModel'); // Ensure Student model is correctly imported
+const Student = require('../models/studentModel');
+const fs = require('fs').promises;
+const path = require('path');
 
-// Get profile by userId
 const getProfile = async (req, res) => {
     try {
-        const admissionNumber = req.params.admissionNumber;
-        if (!admissionNumber) {
-            return res.status(400).json({ message: "User ID is required" });
-        }
-        const profile = await Profile.findOne({ admissionNumber }).populate('userId');
-        if (!profile) {
-            return res.status(404).json({ message: "Profile not found" });
-        }
-        res.status(200).json(profile);
-    } catch (error) {
-        res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-};
-
-
-// Create a new profile for a user
-const createProfile = async (req, res) => {
-    try {
-        const admissionNumber = req.params.userId;
+        const { admissionNumber } = req.params;
         
-        // Check if profile already exists
-        const existingProfile = await Profile.findOne({ admissionNumber });
-        if (existingProfile) {
-            return res.status(400).json({ message: "Profile already exists for this user" });
+        if (!admissionNumber) {
+            return res.status(400).json({ message: "Admission number is required" });
         }
 
-        // Check if student exists
-        const student = await Student.findById(admissionNumber);
+        const student = await Student.findOne({ admissionNumber });
+        
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }
 
-        const newProfile = new Profile({
-            admissionNumber,
-            email: student.student_email, // Set email from student data
-            ...req.body
-        });
-
-        await newProfile.save();
-        res.status(201).json({ message: "Profile created successfully", profile: newProfile });
-    } catch (error) {
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: "Validation error", error: error.errors });
+        let profile = await Profile.findOne({ admissionNumber: student._id });
+        
+        if (!profile) {
+            profile = new Profile({
+                admissionNumber: student._id,
+                email: student.student_email
+            });
+            await profile.save();
         }
+
+        const profileData = {
+            ...profile.toObject(),
+            name: student.name,
+            email: student.student_email,
+            admissionNumber: student.admissionNumber
+        };
+
+        res.status(200).json(profileData);
+    } catch (error) {
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
 
-// Update profile for a user
 const updateProfile = async (req, res) => {
     try {
-        const admissionNumber = req.params.admissionNumber;
+        const { admissionNumber } = req.params;
         const updates = req.body;
 
-        // Find and update the profile
+        const student = await Student.findOne({ admissionNumber });
+        
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        // Remove read-only fields from updates
+        delete updates.name;
+        delete updates.email;
+        delete updates.admissionNumber;
+
         const profile = await Profile.findOneAndUpdate(
-            { admissionNumber },
+            { admissionNumber: student._id },
             { $set: updates },
             { new: true, runValidators: true }
         );
@@ -71,7 +67,14 @@ const updateProfile = async (req, res) => {
             return res.status(404).json({ message: "Profile not found" });
         }
 
-        res.status(200).json({ message: "Profile updated successfully", profile });
+        const updatedProfileData = {
+            ...profile.toObject(),
+            name: student.name,
+            email: student.student_email,
+            admissionNumber: student.admissionNumber
+        };
+
+        res.status(200).json({ message: "Profile updated successfully", profile: updatedProfileData });
     } catch (error) {
         if (error.name === 'ValidationError') {
             return res.status(400).json({ message: "Validation error", error: error.errors });
@@ -80,62 +83,45 @@ const updateProfile = async (req, res) => {
     }
 };
 
-// Update profile picture
 const updateProfilePicture = async (req, res) => {
     try {
-        const admissionNumber = req.params.admissionNumber;
-        const profilePicture = req.file ? req.file.path : null;
+        const { admissionNumber } = req.params;
+        const { profilePictureUrl } = req.body; // Accept profile picture URL
 
-        if (!profilePicture) {
-            return res.status(400).json({ message: "No file uploaded" });
+        if (!profilePictureUrl) {
+            return res.status(400).json({ message: "Profile picture URL is required" });
         }
 
-        const profile = await Profile.findOneAndUpdate(
-            { admissionNumber },
-            { $set: { profilePicture } },
-            { new: true }
-        );
+        const student = await Student.findOne({ admissionNumber });
+        
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        const profile = await Profile.findOne({ admissionNumber: student._id });
 
         if (!profile) {
             return res.status(404).json({ message: "Profile not found" });
         }
 
-        res.status(200).json({ message: "Profile picture updated successfully", profile });
+        profile.profilePicture = profilePictureUrl;
+        await profile.save();
+
+        const updatedProfileData = {
+            ...profile.toObject(),
+            name: student.name,
+            email: student.student_email,
+            admissionNumber: student.admissionNumber
+        };
+
+        res.status(200).json({ message: "Profile picture updated successfully", profile: updatedProfileData });
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
 
-// Update guardian information for a user
-const updateGuardianInfo = async (req, res) => {
-    try {
-        const admissionNumber = req.params.admissionNumber;
-        const guardianInfo = req.body;
-
-        const profile = await Profile.findOneAndUpdate(
-            { admissionNumber },
-            { $set: { guardianInfo } },
-            { new: true, runValidators: true }
-        );
-
-        if (!profile) {
-            return res.status(404).json({ message: "Profile not found" });
-        }
-
-        res.status(200).json({ message: "Guardian information updated successfully", profile });
-    } catch (error) {
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: "Validation error", error: error.errors });
-        }
-        res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-};
-
-// Export the controller functions
 module.exports = {
     getProfile,
-    createProfile,
     updateProfile,
-    updateProfilePicture,
-    updateGuardianInfo
+    updateProfilePicture
 };

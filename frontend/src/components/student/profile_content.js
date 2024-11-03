@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { Book, Calendar, Globe, Hash, Mail, Phone, User, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Button, Card, Form, Nav, Tab } from 'react-bootstrap';
+import { User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Alert, Button, Card, Form } from 'react-bootstrap';
 
-// API base URL - adjust as needed
-const API_BASE_URL = 'http://localhost:4000/api/profileRoutes/admissionNumber';
+const API_BASE_URL = 'http://localhost:4000/api/profile';
+
 const Profile = () => {
   return (
     <div className="d-flex min-vh-100">
@@ -19,33 +19,24 @@ const ProfileContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Fetch profile data on component mount
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const admissionNumber = sessionStorage.getItem('admissionNumber');
         
-        // Check if userId exists
         if (!admissionNumber) {
-          setError('User ID not found. Please log in again.');
+          setError('Admission number not found. Please log in again.');
           setLoading(false);
           return;
         }
 
-        const response = await axios.get(`${API_BASE_URL}`);
-        //const response = await axios.get("http://localhost:4000/api/profileRoutes/admissionNumber", { admissionNumber });
-        
-        if (!response.data) {
-          setError('No profile data received');
-          setLoading(false);
-          return;
-        }
-
+        const response = await axios.get(`${API_BASE_URL}/admissionNumber/${admissionNumber}`);
         setProfileData(response.data);
         setLoading(false);
       } catch (err) {
-        setError(err.response?.data?.message || err.message || 'An error occurred while fetching profile data');
+        setError(err.response?.data?.message || err.message || 'Error fetching profile');
         setLoading(false);
       }
     };
@@ -56,15 +47,7 @@ const ProfileContent = () => {
   if (loading) return <div className="text-center mt-5">Loading...</div>;
   if (error) return (
     <div className="text-center mt-5">
-      <div className="text-danger mb-3">{error}</div>
-      <Button variant="primary" onClick={() => window.location.href = '/login'}>
-        Go to Login
-      </Button>
-    </div>
-  );
-  if (!profileData) return (
-    <div className="text-center mt-5">
-      <div className="mb-3">No profile data found</div>
+      <Alert variant="danger">{error}</Alert>
       <Button variant="primary" onClick={() => window.location.href = '/login'}>
         Go to Login
       </Button>
@@ -73,129 +56,47 @@ const ProfileContent = () => {
 
   return (
     <main className="container">
-      <h1 className="mb-4 text-center">Profile</h1>
+      <h1 className="mb-4 text-center">Student Profile</h1>
+      {successMessage && (
+        <Alert variant="success" onClose={() => setSuccessMessage('')} dismissible>
+          {successMessage}
+        </Alert>
+      )}
       <div className="row">
         <div className="col-md-4 mb-4">
-          <ProfileInfo profileData={profileData} setProfileData={setProfileData} />
+          <ProfileInfo 
+            profileData={profileData} 
+            setProfileData={setProfileData}
+            setSuccessMessage={setSuccessMessage}
+            setError={setError}
+          />
         </div>
         <div className="col-md-8">
-          <AcademicDetails profileData={profileData} setProfileData={setProfileData} />
+          <AcademicDetails 
+            profileData={profileData} 
+            setProfileData={setProfileData}
+            setSuccessMessage={setSuccessMessage}
+            setError={setError}
+          />
         </div>
       </div>
     </main>
   );
 };
 
-const ProfileInfo = ({ profileData, setProfileData }) => {
+const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    name: profileData?.admissionNumber?.name || '',
+    name: profileData?.name || '',
     email: profileData?.email || '',
-    admissionNumber: profileData?.admissionNumber?.admissionNumber || '',
-    address: profileData?.homeAddress || '',
+    admissionNumber: profileData?.admissionNumber || '',
+    phone: profileData?.phone || '',
+    homeAddress: profileData?.homeAddress || '',
     dob: profileData?.dob ? new Date(profileData.dob).toISOString().split('T')[0] : '',
+    nationality: profileData?.nationality || '',
+    gender: profileData?.gender || '',
+    profilePicture: profileData?.profilePicture || ''
   });
-  const [profilePicture, setProfilePicture] = useState(profileData?.profilePicture || null);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handlePictureChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const formData = new FormData();
-        formData.append('profilePicture', file);
-        
-        const admissionNumber = localStorage.getItem('userId');
-        if (!admissionNumber) {
-          setError('User ID not found. Please log in again.');
-          return;
-        }
-
-        const response = await axios.put(`${API_BASE_URL}/picture`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        
-        setProfilePicture(response.data.profile.profilePicture);
-        setProfileData(prevData => ({ ...prevData, profilePicture: response.data.profile.profilePicture }));
-        setError(null);
-      } catch (error) {
-        setError('Error uploading profile picture: ' + (error.response?.data?.message || error.message));
-      }
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      const admissionNumber = localStorage.getItem('admissionNumber');
-      if (!admissionNumber) {
-        setError('User ID not found. Please log in again.');
-        return;
-      }
-
-      const response = await axios.put(`${API_BASE_URL}`, formData);
-      setProfileData(response.data.profile);
-      setIsEditing(false);
-      setError(null);
-    } catch (error) {
-      setError('Error updating profile: ' + (error.response?.data?.message || error.message));
-    }
-  };
-
-  return (
-    <Card>
-      <Card.Body>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <div className="text-center mb-4">
-          <div className="position-relative mx-auto" style={{
-            width: '150px', height: '150px', borderRadius: '50%', border: '4px solid #007bff', overflow: 'hidden'
-          }}>
-            {profilePicture ? (
-              <img src={profilePicture} alt="Profile" className="w-100 h-100 object-fit-cover" />
-            ) : (
-              <div className="d-flex align-items-center justify-content-center bg-light h-100">
-                <User size={64} />
-              </div>
-            )}
-          </div>
-          {isEditing && (
-            <Form.Group controlId="profilePicture" className="mt-2">
-              <Form.Control type="file" onChange={handlePictureChange} accept="image/jpeg,image/png,image/jpg" />
-            </Form.Group>
-          )}
-        </div>
-        <Form>
-          {Object.entries(formData).map(([field, value]) => (
-            <Form.Group key={field} className="mb-3">
-              <Form.Label className="d-flex align-items-center">
-                {getFieldIcon(field)}
-                <span className="ms-2">{field.charAt(0).toUpperCase() + field.slice(1)}</span>
-              </Form.Label>
-              <Form.Control
-                name={field}
-                value={value}
-                onChange={handleInputChange}
-                disabled={!isEditing || ['admissionNumber', 'dob'].includes(field)}
-              />
-            </Form.Group>
-          ))}
-          <Button variant={isEditing ? "primary" : "secondary"} onClick={isEditing ? handleSave : () => setIsEditing(true)} className="w-100">
-            {isEditing ? 'Save' : 'Edit'}
-          </Button>
-        </Form>
-      </Card.Body>
-    </Card>
-  );
-};
-
-const DetailsComponent = ({ details, setDetails, disabledFields, onSave }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(details);
-  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -204,156 +105,152 @@ const DetailsComponent = ({ details, setDetails, disabledFields, onSave }) => {
 
   const handleSave = async () => {
     try {
-      await onSave(formData);
-      setDetails(formData);
+      const admissionNumber = sessionStorage.getItem('admissionNumber');
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`, 
+        formData
+      );
+      
+      setProfileData(response.data.profile);
       setIsEditing(false);
-      setError(null);
+      setSuccessMessage('Profile updated successfully');
     } catch (error) {
-      setError('Error saving details: ' + (error.response?.data?.message || error.message));
+      setError('Error updating profile: ' + (error.response?.data?.message || error.message));
     }
   };
+
+  const readOnlyFields = ['name', 'email', 'admissionNumber'];
 
   return (
     <Card>
       <Card.Body>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <Form>
-          <div className="row">
-            {Object.entries(formData).map(([field, value]) => (
-              <Form.Group key={field} className="col-md-6 mb-3">
-                <Form.Label className="d-flex align-items-center">
-                  {getFieldIcon(field)}
-                  <span className="ms-2">{field.charAt(0).toUpperCase() + field.slice(1)}</span>
-                </Form.Label>
-                <Form.Control
-                  name={field}
-                  value={value || ''}
-                  onChange={handleInputChange}
-                  disabled={!isEditing || disabledFields.includes(field)}
-                  placeholder={`Enter ${field}`}
-                />
-              </Form.Group>
-            ))}
+        <div className="text-center mb-4">
+          <div className="position-relative mx-auto" style={{
+            width: '150px',
+            height: '150px',
+            borderRadius: '50%',
+            border: '4px solid #007bff',
+            overflow: 'hidden'
+          }}>
+            {formData.profilePicture ? (
+              <img 
+                src={formData.profilePicture} 
+                alt="Profile" 
+                className="w-100 h-100 object-fit-cover"
+              />
+            ) : (
+              <div className="d-flex align-items-center justify-content-center bg-light h-100">
+                <User size={64} />
+              </div>
+            )}
           </div>
-          <Button variant={isEditing ? "primary" : "secondary"} onClick={isEditing ? handleSave : () => setIsEditing(true)} className="w-100 mt-3">
-            {isEditing ? 'Save' : 'Edit'}
-          </Button>
+          {isEditing && (
+            <Form.Group controlId="profilePicture" className="mt-2">
+              <Form.Label>Profile Picture URL</Form.Label>
+              <Form.Control
+                type="text"
+                name="profilePicture"
+                value={formData.profilePicture}
+                onChange={handleInputChange}
+                placeholder="Enter image URL"
+              />
+            </Form.Group>
+          )}
+        </div>
+        
+        <Form>
+          {Object.entries(formData).map(([field, value]) => (
+            <Form.Group key={field} controlId={field} className="mb-3">
+              <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
+              <Form.Control 
+                type={field === 'dob' ? 'date' : 'text'}
+                name={field}
+                value={value}
+                onChange={handleInputChange}
+                readOnly={readOnlyFields.includes(field)}
+                disabled={!isEditing && !readOnlyFields.includes(field)}
+              />
+            </Form.Group>
+          ))}
+          <div className="d-flex justify-content-between">
+            <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </Button>
+            {isEditing && (
+              <Button variant="primary" onClick={handleSave}>
+                Save Changes
+              </Button>
+            )}
+          </div>
         </Form>
       </Card.Body>
     </Card>
   );
 };
 
-const AcademicDetails = ({ profileData, setProfileData }) => {
-  const [error, setError] = useState(null);
-  const [academicDetails, setAcademicDetails] = useState({
-    classTeacher: profileData?.classTeacher || '',
+const AcademicDetails = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [academicData, setAcademicData] = useState({
     class: profileData?.class || '',
+    classTeacher: profileData?.classTeacher || '',
     yearOfStudy: profileData?.yearOfStudy || '',
-    gpa: profileData?.gpa || '',
     yearOfAdmission: profileData?.yearOfAdmission || '',
-    graduation: profileData?.graduation || '',
+    gpa: profileData?.gpa || '',
+    graduation: profileData?.graduation || ''
   });
 
-  const [guardianDetails, setGuardianDetails] = useState(profileData?.guardianInfo?.[0] || {
-    parentName: '', relationship: '', contactNumber: '', email: '', occupation: '',
-    address: '', emergencyContact: '', alternativeContact: '',
-  });
-
-  const [personalDetails, setPersonalDetails] = useState({
-    dob: profileData?.dob ? new Date(profileData.dob).toISOString().split('T')[0] : '',
-    nationality: profileData?.nationality || '', 
-    religion: profileData?.religion || '',
-    gender: profileData?.gender || '', 
-    languages: (profileData?.languages || []).join(', '),
-    homeAddress: profileData?.homeAddress || '', 
-    city: profileData?.city || '',
-    country: profileData?.country || '', 
-    phone: profileData?.phone || '', 
-    email: profileData?.email || '',
-  });
-
-  const handleSaveAcademic = async (data) => {
-    try {
-      const admissionNumber = sessionStorage.getItem('admissionNumber');
-      if (!admissionNumber) throw new Error('User ID not found. Please log in again.');
-      
-      const response = await axios.put(`${API_BASE_URL}`, data);
-      setProfileData(response.data.profile);
-      setError(null);
-    } catch (error) {
-      throw new Error(error.response?.data?.message || error.message);
-    }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setAcademicData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveGuardian = async (data) => {
+  const handleSave = async () => {
     try {
       const admissionNumber = sessionStorage.getItem('admissionNumber');
-      if (!admissionNumber) throw new Error('User ID not found. Please log in again.');
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`,
+        academicData
+      );
       
-      const response = await axios.put(`${API_BASE_URL}/admissionNumber/${admissionNumber}/guardian`, [data]);
       setProfileData(response.data.profile);
-      setError(null);
+      setIsEditing(false);
+      setSuccessMessage('Academic details updated successfully');
     } catch (error) {
-      throw new Error(error.response?.data?.message || error.message);
-    }
-  };
-
-  const handleSavePersonal = async (data) => {
-    try {
-      const admissionNumber = sessionStorage.getItem('admissionNumber');
-      if (!admissionNumber) throw new Error('User ID not found. Please log in again.');
-      
-      const updatedData = { ...data, languages: data.languages.split(',').map(lang => lang.trim()) };
-      const response = await axios.put(`${API_BASE_URL}`, updatedData);
-      setProfileData(response.data.profile);
-      setError(null);
-    } catch (error) {
-      throw new Error(error.response?.data?.message || error.message);
+      setError('Error updating academic details: ' + (error.response?.data?.message || error.message));
     }
   };
 
   return (
     <Card>
       <Card.Body>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <Tab.Container defaultActiveKey="academic">
-          <Nav variant="tabs" className="mb-3">
-            <Nav.Item><Nav.Link eventKey="academic">Academic</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link eventKey="guardian">Parent/Guardian details</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link eventKey="personal">Personal details</Nav.Link></Nav.Item>
-          </Nav>
-          <Tab.Content>
-            <Tab.Pane eventKey="academic">
-              <DetailsComponent details={academicDetails} setDetails={setAcademicDetails} disabledFields={['classTeacher', 'class', 'yearOfStudy', 'yearOfAdmission', 'graduation', 'gpa']} onSave={handleSaveAcademic} />
-            </Tab.Pane>
-            <Tab.Pane eventKey="guardian">
-              <DetailsComponent details={guardianDetails} setDetails={setGuardianDetails} disabledFields={[]} onSave={handleSaveGuardian} />
-            </Tab.Pane>
-            <Tab.Pane eventKey="personal">
-              <DetailsComponent details={personalDetails} setDetails={setPersonalDetails} disabledFields={[]} onSave={handleSavePersonal} />
-            </Tab.Pane>
-          </Tab.Content>
-        </Tab.Container>
+        <h3 className="mb-4">Academic Details</h3>
+        <Form>
+          {Object.entries(academicData).map(([field, value]) => (
+            <Form.Group key={field} controlId={field} className="mb-3">
+              <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
+              <Form.Control
+                type="text"
+                name={field}
+                value={value}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+              />
+            </Form.Group>
+          ))}
+          <div className="d-flex justify-content-between">
+            <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+              {isEditing ? 'Cancel' : 'Edit Details'}
+            </Button>
+            {isEditing && (
+              <Button variant="primary" onClick={handleSave}>
+                Save Changes
+              </Button>
+            )}
+          </div>
+        </Form>
       </Card.Body>
     </Card>
   );
-};
-
-const getFieldIcon = (field) => {
-  const iconProps = { size: 20, className: "text-muted" };
-  switch (field.toLowerCase()) {
-    case 'name': case 'parentname': return <User {...iconProps} />;
-    case 'email': return <Mail {...iconProps} />;
-    case 'admissionnumber': return <Hash {...iconProps} />;
-    case 'address': case 'homeaddress': return <User {...iconProps} />;
-    case 'dob': return <Calendar {...iconProps} />;
-    case 'class': case 'yearofstudy': case 'gpa': case 'yearofadmission': case 'graduation': return <Book {...iconProps} />;
-    case 'relationship': return <Users {...iconProps} />;
-    case 'contactnumber': case 'phone': case 'emergencycontact': case 'alternativecontact': return <Phone {...iconProps} />;
-    case 'nationality': case 'country': return <Globe {...iconProps} />;
-    default: return null;
-  }
 };
 
 export default Profile;
