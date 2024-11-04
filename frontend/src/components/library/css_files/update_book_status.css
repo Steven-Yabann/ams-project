@@ -1,0 +1,42 @@
+.form-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+h2, h3 {
+    color: #333;
+    text-align: center;
+}
+
+input, select, .submit-btn {
+    width: calc(100% - 16px);
+    padding: 10px;
+    margin: 8px 0;
+    box-sizing: border-box;
+}
+
+.select-input, .select-status, .input-field {
+    width: 48%;
+}
+
+.flex-inputs {
+    display: flex;
+    gap: 10px;
+}
+
+.submit-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.submit-btn:hover {
+    background-color: #45a049;
+}

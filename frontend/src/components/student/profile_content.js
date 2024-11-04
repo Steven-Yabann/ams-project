@@ -1,11 +1,13 @@
-import { Book, Calendar, Globe, Hash, Mail, Phone, User, Users } from 'lucide-react';
-import { useState } from 'react';
-import { Button, Card, Form, Nav, Tab } from 'react-bootstrap';
+import axios from 'axios';
+import { User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Alert, Button, Card, Form, Nav, Tab } from 'react-bootstrap';
+
+const API_BASE_URL = 'http://localhost:4000/api/profile';
 
 const Profile = () => {
   return (
     <div className="d-flex min-vh-100">
-      {/* Sidebar component would go here */}
       <div className="flex-grow-1 bg-light p-3">
         <ProfileContent />
       </div>
@@ -14,67 +16,128 @@ const Profile = () => {
 };
 
 const ProfileContent = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [profileData, setProfileData] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const admissionNumber = sessionStorage.getItem('admissionNumber');
+        
+        if (!admissionNumber) {
+          setError('Admission number not found. Please log in again.');
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/admissionNumber/${admissionNumber}`);
+        setProfileData(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Error fetching profile');
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (loading) return <div className="text-center mt-5">Loading...</div>;
+  if (error) return (
+    <div className="text-center mt-5">
+      <Alert variant="danger">{error}</Alert>
+      <Button variant="primary" onClick={() => window.location.href = '/login'}>
+        Go to Login
+      </Button>
+    </div>
+  );
+
   return (
     <main className="container">
-      <h1 className="mb-4 text-center">Profile</h1>
+      <h1 className="mb-4 text-center">Student Profile</h1>
+      {successMessage && (
+        <Alert variant="success" onClose={() => setSuccessMessage('')} dismissible>
+          {successMessage}
+        </Alert>
+      )}
       <div className="row">
         <div className="col-md-4 mb-4">
-          <ProfileInfo />
+          <ProfileInfo 
+            profileData={profileData} 
+            setProfileData={setProfileData}
+            setSuccessMessage={setSuccessMessage}
+            setError={setError}
+          />
         </div>
         <div className="col-md-8">
-          <AcademicDetails />
+          <DetailsTabs 
+            profileData={profileData} 
+            setProfileData={setProfileData}
+            setSuccessMessage={setSuccessMessage}
+            setError={setError}
+          />
         </div>
       </div>
     </main>
   );
 };
 
-const ProfileInfo = () => {
+const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: 'Student Name',
-    email: 'student@example.com',
-    admissionNumber: '123456',  // Admin/Teacher-only field
-    address: '1234 School St.',
-    dob: '01-01-2000',  // Admin/Teacher-only field
+  const [formData, setFormData] = useState({
+    name: profileData?.name || '',
+    email: profileData?.email || '',
+    admissionNumber: profileData?.admissionNumber || '',
+    phone: profileData?.phone || '',
+    homeAddress: profileData?.homeAddress || '',
+    dob: profileData?.dob ? new Date(profileData.dob).toISOString().split('T')[0] : '',
+    nationality: profileData?.nationality || '',
+    gender: profileData?.gender || '',
+    profilePicture: profileData?.profilePicture || ''
   });
-  const [profilePicture, setProfilePicture] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfileData({ ...profileData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePictureChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePicture(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleSave = async () => {
+    try {
+      const admissionNumber = sessionStorage.getItem('admissionNumber');
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`, 
+        formData
+      );
+      
+      setProfileData(response.data.profile);
+      setIsEditing(false);
+      setSuccessMessage('Profile updated successfully');
+    } catch (error) {
+      setError('Error updating profile: ' + (error.response?.data?.message || error.message));
     }
   };
 
-  const handleSave = () => {
-    console.log('Profile data saved:', profileData);
-    setIsEditing(false);
-  };
+  const readOnlyFields = ['name', 'email', 'admissionNumber'];
 
   return (
     <Card>
       <Card.Body>
         <div className="text-center mb-4">
-          <div style={{
+          <div className="position-relative mx-auto" style={{
             width: '150px',
             height: '150px',
-            margin: '0 auto',
             borderRadius: '50%',
             border: '4px solid #007bff',
             overflow: 'hidden'
           }}>
-            {profilePicture ? (
-              <img src={profilePicture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {formData.profilePicture ? (
+              <img 
+                src={formData.profilePicture} 
+                alt="Profile" 
+                className="w-100 h-100 object-fit-cover"
+              />
             ) : (
               <div className="d-flex align-items-center justify-content-center bg-light h-100">
                 <User size={64} />
@@ -83,190 +146,285 @@ const ProfileInfo = () => {
           </div>
           {isEditing && (
             <Form.Group controlId="profilePicture" className="mt-2">
-              <Form.Control type="file" onChange={handlePictureChange} />
+              <Form.Label>Profile Picture URL</Form.Label>
+              <Form.Control
+                type="text"
+                name="profilePicture"
+                value={formData.profilePicture}
+                onChange={handleInputChange}
+                placeholder="Enter image URL"
+              />
             </Form.Group>
           )}
         </div>
+        
         <Form>
-          {Object.entries(profileData).map(([field, value]) => (
-            <Form.Group key={field} className="mb-3">
-              <Form.Label className="d-flex align-items-center">
-                {getFieldIcon(field)}
-                <span className="ms-2">{field.charAt(0).toUpperCase() + field.slice(1)}</span>
-              </Form.Label>
-              <Form.Control
+          {Object.entries(formData).map(([field, value]) => (
+            <Form.Group key={field} controlId={field} className="mb-3">
+              <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
+              <Form.Control 
+                type={field === 'dob' ? 'date' : 'text'}
                 name={field}
                 value={value}
                 onChange={handleInputChange}
-                disabled={!isEditing || ['admissionNumber', 'dob'].includes(field)}  // Disable admin/teacher fields
+                readOnly={readOnlyFields.includes(field)}
+                disabled={!isEditing && !readOnlyFields.includes(field)}
               />
             </Form.Group>
           ))}
-          <Button
-            variant={isEditing ? "primary" : "secondary"}
-            onClick={isEditing ? handleSave : () => setIsEditing(true)}
-            className="w-100"
-          >
-            {isEditing ? 'Save' : 'Edit'}
-          </Button>
-        </Form>
-      </Card.Body>
-    </Card>
-  );
-};
-
-const DetailsComponent = ({ details, setDetails, disabledFields }) => {
-  const [isEditing, setIsEditing] = useState(false);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setDetails((prevDetails) => ({ ...prevDetails, [name]: value }));
-  };
-
-  const handleSave = () => {
-    console.log('Details saved:', details);
-    setIsEditing(false);
-  };
-
-  return (
-    <Card>
-      <Card.Body>
-        <Form>
-          <div className="row">
-            {Object.entries(details).map(([field, value]) => (
-              <Form.Group key={field} className="col-md-6 mb-3">
-                <Form.Label className="d-flex align-items-center">
-                  {getFieldIcon(field)}
-                  <span className="ms-2">{field.charAt(0).toUpperCase() + field.slice(1)}</span>
-                </Form.Label>
-                <Form.Control
-                  name={field}
-                  value={value}
-                  onChange={handleInputChange}
-                  disabled={!isEditing || disabledFields.includes(field)}  // Disable admin/teacher fields
-                  placeholder={`Enter ${field}`}
-                />
-              </Form.Group>
-            ))}
+          <div className="d-flex justify-content-between">
+            <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </Button>
+            {isEditing && (
+              <Button variant="primary" onClick={handleSave}>
+                Save Changes
+              </Button>
+            )}
           </div>
-          <Button
-            variant={isEditing ? "primary" : "secondary"}
-            onClick={isEditing ? handleSave : () => setIsEditing(true)}
-            className="w-100 mt-3"
-          >
-            {isEditing ? 'Save' : 'Edit'}
-          </Button>
         </Form>
       </Card.Body>
     </Card>
   );
 };
 
-const AcademicDetails = () => {
-  const [academicDetails, setAcademicDetails] = useState({
-    classTeacher: '',  // Admin/Teacher-only field
-    class: '',         // Admin/Teacher-only field
-    yearOfStudy: '',   // Admin/Teacher-only field
-    gpa: '',
-    yearOfAdmission: '',  // Admin/Teacher-only field
-    graduation: '',    // Admin/Teacher-only field
-  });
-
-  const [guardianDetails, setGuardianDetails] = useState({
-    parentName: '',
-    relationship: '',
-    contactNumber: '',
-    email: '',
-    occupation: '',
-    address: '',
-    emergencyContact: '',
-    alternativeContact: '',
-  });
-
-  const [personalDetails, setPersonalDetails] = useState({
-    dob: '',
-    nationality: '',
-    religion: '',
-    gender: '',
-    languages: '',
-    homeAddress: '',
-    city: '',
-    country: '',
-    phone: '',
-    email: '',
-  });
-
+const DetailsTabs = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
   return (
-    <Card>
-      <Card.Body>
-        <Tab.Container defaultActiveKey="academic">
-          <Nav variant="tabs" className="mb-3">
+    <Tab.Container defaultActiveKey="academic">
+      <Card>
+        <Card.Header>
+          <Nav variant="tabs">
             <Nav.Item>
-              <Nav.Link eventKey="academic">Academic</Nav.Link>
+              <Nav.Link eventKey="academic">Academic Details</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="guardian">Parent/Guardian details</Nav.Link>
+              <Nav.Link eventKey="personal">Personal Details</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="personal">Personal details</Nav.Link>
+              <Nav.Link eventKey="guardian">Guardian Details</Nav.Link>
             </Nav.Item>
           </Nav>
+        </Card.Header>
+        <Card.Body>
           <Tab.Content>
             <Tab.Pane eventKey="academic">
-              <DetailsComponent
-                details={academicDetails}
-                setDetails={setAcademicDetails}
-                disabledFields={['classTeacher', 'class', 'yearOfStudy', 'yearOfAdmission', 'graduation', 'gpa']}  // Disable these fields
+              <AcademicDetails 
+                profileData={profileData}
+                setProfileData={setProfileData}
+                setSuccessMessage={setSuccessMessage}
+                setError={setError}
+              />
+            </Tab.Pane>
+            <Tab.Pane eventKey="personal">
+              <PersonalDetails 
+                profileData={profileData}
+                setProfileData={setProfileData}
+                setSuccessMessage={setSuccessMessage}
+                setError={setError}
               />
             </Tab.Pane>
             <Tab.Pane eventKey="guardian">
-              <DetailsComponent details={guardianDetails} setDetails={setGuardianDetails} disabledFields={[]} />
-            </Tab.Pane>
-            <Tab.Pane eventKey="personal">
-              <DetailsComponent details={personalDetails} setDetails={setPersonalDetails} disabledFields={[]} />
+              <GuardianDetails 
+                profileData={profileData}
+                setProfileData={setProfileData}
+                setSuccessMessage={setSuccessMessage}
+                setError={setError}
+              />
             </Tab.Pane>
           </Tab.Content>
-        </Tab.Container>
-      </Card.Body>
-    </Card>
+        </Card.Body>
+      </Card>
+    </Tab.Container>
   );
 };
 
-const getFieldIcon = (field) => {
-  const iconProps = { size: 20, className: "text-muted" };
-  switch (field.toLowerCase()) {
-    case 'name':
-    case 'parentname':
-      return <User {...iconProps} />;
-    case 'email':
-      return <Mail {...iconProps} />;
-    case 'admissionnumber':
-      return <Hash {...iconProps} />;
-    case 'address':
-    case 'homeaddress':
-      return <User {...iconProps} />;  // Use User instead of MProfilein
-    case 'dob':
-      return <Calendar {...iconProps} />;
-    case 'class':
-    case 'yearofstudy':
-    case 'gpa':
-    case 'yearofadmission':
-    case 'graduation':
-      return <Book {...iconProps} />;
-    case 'relationship':
-      return <Users {...iconProps} />;
-    case 'contactnumber':
-    case 'phone':
-    case 'emergencycontact':
-    case 'alternativecontact':
-      return <Phone {...iconProps} />;
-    case 'nationality':
-    case 'country':
-      return <Globe {...iconProps} />;
-    default:
-      return null;
-  }
+const AcademicDetails = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [academicData, setAcademicData] = useState({
+    class: profileData?.class || '',
+    classTeacher: profileData?.classTeacher || '',
+    yearOfStudy: profileData?.yearOfStudy || '',
+    yearOfAdmission: profileData?.yearOfAdmission || '',
+    gpa: profileData?.gpa || '',
+    graduation: profileData?.graduation || ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setAcademicData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const admissionNumber = sessionStorage.getItem('admissionNumber');
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`,
+        academicData
+      );
+      
+      setProfileData(response.data.profile);
+      setIsEditing(false);
+      setSuccessMessage('Academic details updated successfully');
+    } catch (error) {
+      setError('Error updating academic details: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  return (
+    <Form>
+      {Object.entries(academicData).map(([field, value]) => (
+        <Form.Group key={field} controlId={field} className="mb-3">
+          <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
+          <Form.Control
+            type="text"
+            name={field}
+            value={value}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+          />
+        </Form.Group>
+      ))}
+      <div className="d-flex justify-content-between">
+        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? 'Cancel' : 'Edit Details'}
+        </Button>
+        {isEditing && (
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        )}
+      </div>
+    </Form>
+  );
 };
 
+const PersonalDetails = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [personalData, setPersonalData] = useState({
+    religion: profileData?.religion || '',
+    languages: profileData?.languages?.join(', ') || '',
+    city: profileData?.city || '',
+    country: profileData?.country || '',
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPersonalData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const admissionNumber = sessionStorage.getItem('admissionNumber');
+      const formattedData = {
+        ...personalData,
+        languages: personalData.languages.split(',').map(lang => lang.trim())
+      };
+      
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`,
+        formattedData
+      );
+      
+      setProfileData(response.data.profile);
+      setIsEditing(false);
+      setSuccessMessage('Personal details updated successfully');
+    } catch (error) {
+      setError('Error updating personal details: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  return (
+    <Form>
+      {Object.entries(personalData).map(([field, value]) => (
+        <Form.Group key={field} controlId={field} className="mb-3">
+          <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
+          <Form.Control
+            type="text"
+            name={field}
+            value={value}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            placeholder={field === 'languages' ? 'Enter languages separated by commas' : `Enter ${field}`}
+          />
+        </Form.Group>
+      ))}
+      <div className="d-flex justify-content-between">
+        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? 'Cancel' : 'Edit Details'}
+        </Button>
+        {isEditing && (
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        )}
+      </div>
+    </Form>
+  );
+};
+
+const GuardianDetails = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [guardianData, setGuardianData] = useState({
+    parentName: profileData?.guardianInfo?.[0]?.parentName || '',
+    relationship: profileData?.guardianInfo?.[0]?.relationship || '',
+    contactNumber: profileData?.guardianInfo?.[0]?.contactNumber || '',
+    email: profileData?.guardianInfo?.[0]?.email || '',
+    occupation: profileData?.guardianInfo?.[0]?.occupation || '',
+    address: profileData?.guardianInfo?.[0]?.address || '',
+    emergencyContact: profileData?.guardianInfo?.[0]?.emergencyContact || '',
+    alternativeContact: profileData?.guardianInfo?.[0]?.alternativeContact || ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setGuardianData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const admissionNumber = sessionStorage.getItem('admissionNumber');
+      const response = await axios.put(
+        `${API_BASE_URL}/admissionNumber/${admissionNumber}`,
+        { guardianInfo: [guardianData] }
+      );
+      
+      setProfileData(response.data.profile);
+      setIsEditing(false);
+      setSuccessMessage('Guardian details updated successfully');
+    } catch (error) {
+      setError('Error updating guardian details: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  return (
+    <Form>
+      {Object.entries(guardianData).map(([field, value]) => (
+        <Form.Group key={field} controlId={field} className="mb-3">
+          <Form.Label>
+            {field.split(/(?=[A-Z])/).join(' ').charAt(0).toUpperCase() + 
+             field.split(/(?=[A-Z])/).join(' ').slice(1)}
+          </Form.Label>
+          <Form.Control
+            type={field === 'email' ? 'email' : 'text'}
+            name={field}
+            value={value}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+          />
+        </Form.Group>
+      ))}
+      <div className="d-flex justify-content-between">
+        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? 'Cancel' : 'Edit Details'}
+        </Button>
+        {isEditing && (
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        )}
+      </div>
+    </Form>
+  );
+};
 
 export default Profile;
