@@ -18,6 +18,7 @@ import SignUp from './components/global/sign_in'
 //teacher components
 import TeacherDashboard from './components/teacher/attendance';
 import Marks from './components/teacher/marks';
+import TeacherProfile from './components/teacher/profile';
 
 //library components
 import ManageFines from './components/library/manage_fines';
@@ -65,8 +66,9 @@ export default function IndexPage(){
               <Route path="/academic_records" element={<AcademicRecords />} />
               <Route path="/library_component" element={<LibraryComponent />} />
               <Route path="/Student_attendance" element={<Attendance />} />
-              <Route path="/attendance" element={<Attendance />}/>
+              <Route path="/attendance" element={<TeacherDashboard />}/>
               <Route path="/marks" element={<Marks/>}/>
+              <Route path="/profile" element={<TeacherProfile/>}/>
 
 
 

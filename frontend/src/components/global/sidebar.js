@@ -36,7 +36,7 @@ export default function Sidebar({ user_cat }){
                         <Link to="/attendance">Attendance </Link>
                         <Link to="/marks">Performance</Link>
                         <Link to="/page3">Messages</Link>
-                        <Link to="/page4">Profile settings</Link>
+                        <Link to="/profile">Profile settings</Link>
                         </ul>
                     </>
                 )
