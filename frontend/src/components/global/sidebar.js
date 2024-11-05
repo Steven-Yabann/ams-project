@@ -10,7 +10,7 @@ export default function Sidebar({ user_cat }){
                     <>
                         <h2>ADMIN</h2>
                         <ul>
-                        <Link to="/admin_dashboard">Dasboard</Link>
+                        <Link to="/admin_dashboard">Dashboard</Link>
                         <Link to="/create-user">Create User</Link>
                         <Link to="/verify-fees">Pay Fees</Link>
                         <Link to="/update_calender">Update Calender</Link>
