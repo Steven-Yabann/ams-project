@@ -14,6 +14,8 @@ export default function Sidebar({ user_cat }){
                         <Link to="/verify-fees">Pay Fees</Link>
                         <Link to="/update_calender">Update Calender</Link>
                         <Link to="/admin_settings">Settings</Link>
+                        <Link to="/admin_dashboard">Settings</Link>
+
                         </ul>
                     </>
                 )
