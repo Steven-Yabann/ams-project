@@ -151,4 +151,25 @@ const getTeacher = async (req, res) => {
     res.json({ message: "Teacher response" });
 };
 
-module.exports = { createStudent, createTeacher, getStudent, getTeacher };
+const dashboardStats = async (req, res) => {
+    try {
+        const studentsCount = await Student.countDocuments();
+        const teachersCount = await Teacher.countDocuments();
+        const usersCount = await User.countDocuments();
+
+        // Fetch recent users (limit to the latest 10)
+        const recentUsers = await User.find()
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .select('username email userCategory createdAt');
+
+        res.json({ studentsCount, teachersCount, usersCount, recentUsers });
+    } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        res.status(500).json({ message: "Error fetching dashboard statistics" });
+    }
+};
+
+
+
+module.exports = { createStudent, createTeacher, getStudent, getTeacher, dashboardStats };
