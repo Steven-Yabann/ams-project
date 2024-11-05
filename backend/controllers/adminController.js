@@ -151,7 +151,7 @@ const getTeacher = async (req, res) => {
     res.json({ message: "Teacher response" });
 };
 
-const dashboardStats = async (req, res) => {
+ const dashboardStats = async (req, res) => {
     try {
         const studentsCount = await Student.countDocuments();
         const teachersCount = await Teacher.countDocuments();
@@ -173,3 +173,4 @@ const dashboardStats = async (req, res) => {
 
 
 module.exports = { createStudent, createTeacher, getStudent, getTeacher, dashboardStats };
+*/
