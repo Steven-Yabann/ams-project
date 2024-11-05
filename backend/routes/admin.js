@@ -13,4 +13,7 @@ router.post('/teacher', createTeacher);
 
 router.get('/teacher', getTeacher)
 
+router.get('/dashboard-stats', adminController.dashboardStats);
+
+
 module.exports = router;
