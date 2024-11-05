@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './attendance.css';
 
 const TeacherDashboard = () => {
     // State to manage the list of students and their attendance status
@@ -34,8 +35,8 @@ const TeacherDashboard = () => {
         <div className="container mt-4">
             <div className="row">
                 <div className="col-md-2">
-                    <button className="btn btn-primary btn-block mb-2">Take Attendance</button>
-                    <button className="btn btn-secondary btn-block">View Reports</button>
+                    
+                    
                 </div>
                 <div className="col-md-10">
                     <h2>Attendance Form</h2>

@@ -7,6 +7,8 @@ import AdminSettings from './components/admin/admin_settings';
 import Create_user from './components/admin/create_user';
 import UpdateCalender from './components/admin/update_calendar';
 import Verify_fees from './components/admin/verify_fees';
+import AdminDasboard from './components/admin/admin_dashboard';
+
 
 // Global components
 import Login from './components/global/login';
@@ -15,6 +17,7 @@ import Sidebar from './components/global/sidebar';
 // Teacher components
 import TeacherDashboard from './components/teacher/attendance';
 import Marks from './components/teacher/marks';
+import TeacherProfile from './components/teacher/profile';
 
 // Library components
 import ManageFines from './components/library/manage_fines';
@@ -65,6 +68,8 @@ export default function App() {
                             <Route path="/verify-fees" element={<ProtectedRoute category="admin"><Verify_fees /></ProtectedRoute>} />
                             <Route path="/update_calender" element={<ProtectedRoute category="admin"><UpdateCalender /></ProtectedRoute>} />
                             <Route path="/admin_settings" element={<ProtectedRoute category="admin"><AdminSettings /></ProtectedRoute>} />
+                            <Route path="/admin_dashboard" element={<ProtectedRoute category="admin"><AdminDasboard /></ProtectedRoute>} />
+
 
                             {/* Library Routes */}
                             <Route path="/update-book-status" element={<ProtectedRoute category="library"><UpdateBookStatus /></ProtectedRoute>} />

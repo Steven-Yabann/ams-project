@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import './marks.css';
 const Marks = () => {
   const [marksData, setMarksData] = useState([
     { id: 5678, subject: "Math", marks: 74 },
