@@ -180,4 +180,3 @@ const getTeacher = async (req, res) => {
 
 
 module.exports = { createStudent, createTeacher, getStudent, getTeacher, dashboardStats };
-*/
