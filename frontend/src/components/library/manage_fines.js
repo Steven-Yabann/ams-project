@@ -23,11 +23,11 @@ const ManageFines = () => {
     }, []);
 
     const handleFineCalculation = () => {
-        setFineAmount(daysDelayed * 50); // Fine rate, e.g., $50 per day
+        setFineAmount(daysDelayed * 500); // Fine rate, e.g., 500 KES per day
     };
 
     const handleBookCostCalculation = () => {
-        setBookCost(bookCost * 1.5); // E.g., assume lost book cost is 1.5 times its original price
+        setBookCost(bookCost * 1500); // E.g., assume lost book cost is 1500 KES times its original price
     };
 
     return (
@@ -41,7 +41,7 @@ const ManageFines = () => {
                         <tr>
                             <th>Book Title</th>
                             <th>Return Status</th>
-                            <th>Fine Amount</th>
+                            <th>Fine Amount (KES)</th> {/* {{ edit_1 }} */}
                             <th>Days Delayed</th>
                             <th>Payment Status</th>
                         </tr>
@@ -51,7 +51,7 @@ const ManageFines = () => {
                             <tr key={index}>
                                 <td>{book.title}</td>
                                 <td>{book.status}</td>
-                                <td>${book.fine.toFixed(2)}</td>
+                                <td>{book.fine.toLocaleString()} KES</td> {/* {{ edit_2 }} */}
                                 <td>{book.daysDelayed}</td>
                                 <td>{book.paid ? 'Paid' : 'Unpaid'}</td>
                             </tr>
@@ -66,7 +66,7 @@ const ManageFines = () => {
                     <thead>
                         <tr>
                             <th>Book Title</th>
-                            <th>Cost</th>
+                            <th>Cost (KES)</th> {/* {{ edit_3 }} */}
                             <th>Paid</th>
                         </tr>
                     </thead>
@@ -74,7 +74,7 @@ const ManageFines = () => {
                         {lostBooks.map((book, index) => (
                             <tr key={index}>
                                 <td>{book.title}</td>
-                                <td>${book.cost.toFixed(2)}</td>
+                                <td>{book.cost.toLocaleString()} KES</td> {/* {{ edit_4 }} */}
                                 <td>{book.paid ? 'Yes' : 'No'}</td>
                             </tr>
                         ))}
@@ -93,7 +93,7 @@ const ManageFines = () => {
                     placeholder='No of days delayed'
                 />
                 <button onClick={handleFineCalculation}>Calculate</button>
-                <p>Fine Amount: ${fineAmount.toFixed(2)}</p>
+                <p>Fine Amount: {fineAmount.toLocaleString()} KES</p> {/* {{ edit_5 }} */}
             </div>
 
             <div className="calculate-book-cost">
@@ -107,7 +107,7 @@ const ManageFines = () => {
                     placeholder='Cost of book lost'
                 />
                 <button onClick={handleBookCostCalculation}>Calculate Cost to be paid</button>
-                <p>Book Cost: ${bookCost.toFixed(2)}</p>
+                <p>Book Cost: {bookCost.toLocaleString()} KES</p> {/* {{ edit_6 }} */}
             </div>
         </div>
     );
