@@ -80,6 +80,8 @@ export default function App() {
                             {/* Teacher Routes */}
                             <Route path="/attendance" element={<ProtectedRoute category="teacher"><TeacherDashboard /></ProtectedRoute>} />
                             <Route path="/marks" element={<ProtectedRoute category="teacher"><Marks /></ProtectedRoute>} />
+                            <Route path="/profile" element={<ProtectedRoute category="teacher"><TeacherProfile /></ProtectedRoute>} />
+                            <Route path="/calender" element={<ProtectedRoute category="teacher"><UpdateCalender /></ProtectedRoute>} />
 
                             {/* Student Routes */}
                             <Route path="/student-dashboard" element={<ProtectedRoute category="student"><ProfileContent /></ProtectedRoute>} />

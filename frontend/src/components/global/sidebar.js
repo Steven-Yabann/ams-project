@@ -38,8 +38,8 @@ export default function Sidebar({ user_cat }){
                         <ul>
                         <Link to="/attendance">Attendance </Link>
                         <Link to="/marks">Performance</Link>
-                        <Link to="/page3">Messages</Link>
-                        <Link to="/profile">Profile settings</Link>
+                        <Link to="/calender">Calender</Link>
+                        <Link to="/profile">Profile </Link>
                         </ul>
                     </>
                 )
