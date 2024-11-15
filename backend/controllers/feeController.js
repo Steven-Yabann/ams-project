@@ -1,6 +1,6 @@
 const unirest = require("unirest");
 const Fee = require("../models/fee");
-
+const Student = require("../models/studentModel");
 let accessToken = "";
 
 // Generate an access token
@@ -73,8 +73,8 @@ const queryPaymentStatus = async (req, res) => {
                 })
                 .send(JSON.stringify({
                     "BusinessShortCode": 174379,
-                    "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjQxMDI4MTk0MTU3", // Replace with your generated password
-                    "Timestamp": "20241028194157", // Use a dynamically generated timestamp in production
+                    "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjQxMDI4MTk0MTU3",
+                    "Timestamp": "20241028194157",
                     "CheckoutRequestID": checkoutRequestID
                 }))
                 .end(res => res.error ? reject(res.error) : resolve(res.raw_body));
@@ -83,20 +83,39 @@ const queryPaymentStatus = async (req, res) => {
         const statusData = JSON.parse(statusResponse);
         console.log("Payment status response:", statusData);
         if (statusData.ResultCode === "0") {
+            // Attempt to find the student in the Fee collection
+            let student = await Fee.findOne({ studentId });
+            let studentName = student?.name;
+        
+            // If the name is not found in the Fee collection, query the Students collection
+            if (!studentName) {
+                const studentFromStudentsTable = await Student.findOne({ admissionNumber: studentId });
+                studentName = studentFromStudentsTable?.name || "Unknown"; // Default to "Unknown" if not found
+            }
+        
+            // Update or insert the fee record
             await Fee.findOneAndUpdate(
                 { studentId },
-                { feesPaid: 10000, isCleared: true, paymentDate: new Date() },
+                { 
+                    name: studentName, // Set the name retrieved from either table
+                    feesPaid: 10000, 
+                    isCleared: true, 
+                    paymentDate: new Date() 
+                },
                 { new: true, upsert: true }
             );
+        
             res.json({ message: "Payment successful", feeStatus: "Cleared" });
         } else {
             res.status(400).json({ message: "Payment failed or pending", feeStatus: "Pending" });
         }
+        
     } catch (error) {
         console.error("Error querying payment status:", error);
         res.status(500).json({ message: "Error querying payment status", error });
     }
 };
+
 
 // Callback to update payment in DB after successful payment notification
 const updateFeeStatusInDb = async (req, res) => {
@@ -115,4 +134,15 @@ const updateFeeStatusInDb = async (req, res) => {
     }
 };
 
-module.exports = { initiatePayment, queryPaymentStatus, updateFeeStatusInDb };
+const getPaidStudents = async (req, res) => {
+    try {
+        const students = await Fee.find({ isCleared: true }).select("studentId name totalFees feesPaid paymentDate");
+        res.json(students);
+    } catch (err) {
+        console.error("Error fetching paid students:", err);
+        res.status(500).json({ message: "Error fetching paid students" });
+    }
+};
+
+
+module.exports = { initiatePayment, queryPaymentStatus, updateFeeStatusInDb, getPaidStudents };
