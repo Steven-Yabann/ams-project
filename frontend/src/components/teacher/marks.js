@@ -1,5 +1,5 @@
-// Marks.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import './marks.css';
 
 const Marks = () => {
@@ -8,7 +8,8 @@ const Marks = () => {
     { id: 8786, subject: "Chemistry", marks: 65, assessmentType: "Quiz" },
     { id: 4367, subject: "English", marks: 80, assessmentType: "Assignment" },
   ]);
-
+  
+  const [admissionNumbers, setAdmissionNumbers] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
     subject: "",
@@ -17,7 +18,18 @@ const Marks = () => {
   });
 
   const subjects = ["Math", "Chemistry", "English", "Physics", "Biology", "History"];
-  const assessmentTypes = ["Exam", "Quiz", "Assignment", "Project"]; // Assessment types dropdown options
+  const assessmentTypes = ["Exam", "Quiz", "Assignment", "Project"];
+
+  // Fetch admission numbers from the backend
+  useEffect(() => {
+    axios.get("http://localhost:4000/api/teacher/admission-numbers")
+      .then((response) => {
+        setAdmissionNumbers(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching admission numbers:", error);
+      });
+  }, []);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -78,13 +90,22 @@ const Marks = () => {
         <p>GPA: {calculateGPA()}</p>
       </header>
       <div className="form-section">
-        <input
-          type="number"
-          placeholder="Admission No"
+        {/* Admission Number Dropdown */}
+        <select
           name="id"
           value={formData.id}
           onChange={handleInputChange}
-        />
+          className="form-control"
+        >
+          <option value="">Select Admission No</option>
+          {admissionNumbers.map((student) => (
+            <option key={student._id} value={student.admissionNumber}>
+              {student.admissionNumber} - {student.name}
+            </option>
+          ))}
+        </select>
+
+        {/* Subject Dropdown */}
         <select
           name="subject"
           value={formData.subject}
@@ -98,6 +119,8 @@ const Marks = () => {
             </option>
           ))}
         </select>
+
+        {/* Marks Input */}
         <input
           type="number"
           placeholder="Marks"
@@ -105,6 +128,8 @@ const Marks = () => {
           value={formData.marks}
           onChange={handleInputChange}
         />
+
+        {/* Assessment Type Dropdown */}
         <select
           name="assessmentType"
           value={formData.assessmentType}
@@ -118,8 +143,11 @@ const Marks = () => {
             </option>
           ))}
         </select>
+
         <button onClick={handleAddUpdate}>Add/Update Marks</button>
       </div>
+
+      {/* Marks Table */}
       <table>
         <thead>
           <tr>

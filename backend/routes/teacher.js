@@ -3,22 +3,31 @@ const router = express.Router();
 
 // Importing the controller functions from teachersController.js
 const { 
-    addMarks, 
+    addMarks,
+    getMarks,
+    deleteMarks,
     addAttendance, 
     getTeacherProfile, 
-    getCalendarDetails 
+    getAdmissionNumbers
 } = require('../controllers/teachersController');
 
-// Route to add marks for a student
-router.post('/marks.js', addMarks);
+// Route to add, get and delete marks for a student
+router.post('/marks', addMarks);
+
+router.get('/marks', getMarks);
+
+router.delete('/marks/:id', deleteMarks);
 
 // Route to add attendance for a student
-router.post('/attendance.js', addAttendance);
+router.post('/attendance', addAttendance);
 
 // Route to get the teacher's profile
-router.get('../profile/:id', getTeacherProfile);
+router.get('/teacher-details/:identification_no', getTeacherProfile);
 
 // Route to get the teacher's calendar details from another DB
-router.get('../calendar/:id', getCalendarDetails);
+// router.get('/calendar/:id', getCalendarDetails);
 
-module.exports = router;
+// Route to get admission details
+router.get('/admission-numbers', getAdmissionNumbers);
+
+module.exports=router;

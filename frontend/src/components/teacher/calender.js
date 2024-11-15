@@ -37,9 +37,9 @@ export default function UpdateCalender() {
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 events={events}
-                dateClick={handleDateClick}
-                eventClick={handleEventClick}
-                editable={true}
+                // dateClick={handleDateClick}
+                // eventClick={handleEventClick}
+                editable={false}
             />
         </div>
     );

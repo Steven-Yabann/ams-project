@@ -5,7 +5,7 @@ const User = require('../models/userModel');
 const Book = require('../models/bookModel');
 const nodemailer = require('nodemailer');
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 // Email setup - configure with your SMTP provider
 const transporter = nodemailer.createTransport({
