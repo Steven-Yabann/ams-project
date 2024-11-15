@@ -44,6 +44,8 @@ export default function VerifyFees() {
         setError("");
 
         try {
+            alert("Initiating fee verification process. Please wait...");
+
             const initiateResponse = await axios.post("http://localhost:4000/api/verify-fees/initiate-payment", {
                 admissionNumber,
                 phoneNumber
@@ -61,15 +63,19 @@ export default function VerifyFees() {
                     if (queryResponse.status === 200) {
                         setFeeStatus(queryResponse.data);
                         fetchPaidStudents(); // Update the table with the latest data
+
+                        alert("Fee verification successful! Payment details have been updated.");
                     } else {
                         setError("Failed to verify fee payment status.");
                     }
                 } catch (queryError) {
+                    alert("An error occurred while querying payment status.");
                     setError("An error occurred while querying payment status.");
                     console.error(queryError);
                 }
             }, 10000); // 10-second delay before querying status
         } catch (err) {
+            alert("An error occurred while initiating payment.");
             setError("An error occurred while initiating payment.");
             console.error(err);
         } finally {
