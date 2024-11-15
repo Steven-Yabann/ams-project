@@ -2,6 +2,7 @@
 const Student = require('../models/studentModel');
 const Teacher = require('../models/teacherModel');
 const User = require('../models/userModel');
+const Book = require('../models/bookModel');
 const nodemailer = require('nodemailer');
 
 // Email setup - configure with your SMTP provider
@@ -151,4 +152,31 @@ const getTeacher = async (req, res) => {
     res.json({ message: "Teacher response" });
 };
 
-module.exports = { createStudent, createTeacher, getStudent, getTeacher };
+ const dashboardStats = async (req, res) => {
+    try {
+        const studentsCount = await Student.countDocuments();
+        const teachersCount = await Teacher.countDocuments();
+        const usersCount = await User.countDocuments();
+        const booksCount = await Book.countDocuments(); // Count the number of books
+
+        const recentUsers = await User.find()
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .select('admissionNumber userCategory createdAt');
+
+        res.json({ studentsCount, teachersCount, usersCount, booksCount, recentUsers });
+    } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        res.status(500).json({ message: "Error fetching dashboard statistics" });
+    }
+};
+
+
+
+
+
+
+
+
+
+module.exports = { createStudent, createTeacher, getStudent, getTeacher, dashboardStats };

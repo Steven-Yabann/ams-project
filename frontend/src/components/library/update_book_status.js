@@ -49,18 +49,7 @@ const UpdateBookStatus = () => {
                 <option value="Returned">Returned</option>
                 <option value="Borrowed">Borrowed</option>
                 <option value="Lost">Lost</option>
-                <option value="Stolen">Stolen</option>
             </select>
-            {status === 'Lost' && (
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={isPaid}
-                        onChange={() => setIsPaid(!isPaid)}
-                    />
-                    Mark as Paid
-                </label>
-            )}
             {status === 'Returned' && (
                 <div>
                     <h3>Return Details</h3>

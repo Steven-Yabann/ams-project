@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createStudent, createTeacher, getTeacher, getStu } = require('../controllers/adminController');
+const { createStudent, createTeacher, getTeacher, dashboardStats } = require('../controllers/adminController');
 
 
 // Route to create a student
@@ -12,5 +12,8 @@ router.post('/student', createStudent);
 router.post('/teacher', createTeacher);
 
 router.get('/teacher', getTeacher)
+
+router.get('/dashboard-stats', dashboardStats);
+
 
 module.exports = router;
