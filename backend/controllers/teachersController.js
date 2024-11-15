@@ -4,6 +4,7 @@ const Marks = require('../models/marksModel');
 const Attendance = require('../models/attendanceModel');
 const mongoose = require('mongoose');
 const Student = require('../models/studentModel');
+const Teacher = require("../models/teacherModel");
 
 // Function to add marks
 // Add or Update Marks
@@ -111,14 +112,14 @@ const addAttendance = async (req, res) => {
 // Function to get teacher profile information
 const getTeacherProfile = async (req, res) => {
     try {
-        const { identification_no } = req.params;
+        const { identification_no } = req.params; // Get identification number from URL params
 
-        const profile = await TeacherProfile.findOne({ identification_no });
+        const profile = await Teacher.findOne({ identification_no }); // Fetch the teacher profile by identification number
         if (!profile) {
             return res.status(404).json({ message: 'Profile not found' });
         }
 
-        res.json({ profile });
+        res.json({ profile }); // Return the profile data
     } catch (error) {
         res.status(500).json({ message: 'Error fetching teacher profile', error });
     }

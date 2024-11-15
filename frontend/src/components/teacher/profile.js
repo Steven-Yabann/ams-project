@@ -1,30 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Import axios for HTTP requests
 
 const TeacherProfile = () => {
     const [teacher, setTeacher] = useState({
         profilePic: '',
-        name: 'Mr. Wanjohi',
-        classTaught: 'Mathematics',
-        email: 'fred.wanjohi@example.com',
-        department: 'Science'
+        name: '',
+        classTaught: '',
+        email: '',
+        department: ''
     });
     const [loading, setLoading] = useState(true);
 
+    // Fetch teacher data from the backend
     useEffect(() => {
-        // Simulate data fetch for other teacher data
         const fetchTeacherData = async () => {
             try {
-                // Fetch other profile data from the backend if needed
-                const data = { name: 'Mr. Wanjohi', classTaught: 'Mathematics', email: 'fred.wanjohi@example.com', department: 'Science' };
-                setTeacher(data);
+                // Replace with the teacher's identification number (e.g., from session or props)
+                const admissionNumber = sessionStorage.getItem('admissionNumber');
+                const response = await axios.get(`http://localhost:4000/api/teacher/teacher-details/${admissionNumber}`);
+
+                if (response.data.profile) {
+                    setTeacher(response.data.profile);
+                }
             } catch (error) {
-                console.error("Error fetching teacher data:", error);
+                console.error('Error fetching teacher data:', error);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchTeacherData();
-    }, []);
+    }, []); // Empty dependency array to fetch only once on mount
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -35,8 +41,7 @@ const TeacherProfile = () => {
             };
             reader.readAsDataURL(file);
 
-            // Here you would normally upload the file to your backend server
-            // For example:
+            // Here you would upload the file to your backend if needed
             // const formData = new FormData();
             // formData.append('profilePic', file);
             // await fetch('/api/updateProfilePic', { method: 'POST', body: formData });
@@ -58,7 +63,6 @@ const TeacherProfile = () => {
                         />
                     </div>
                     <h2 className="mt-3">{teacher.name}</h2>
-                    
                     <p><strong>Class:</strong> {teacher.classTaught}</p>
                     <p><strong>Email:</strong> {teacher.email}</p>
                     <p><strong>Department:</strong> {teacher.department}</p>

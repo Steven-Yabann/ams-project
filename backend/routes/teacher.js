@@ -22,7 +22,7 @@ router.delete('/marks/:id', deleteMarks);
 router.post('/attendance', addAttendance);
 
 // Route to get the teacher's profile
-router.get('/profile/:id', getTeacherProfile);
+router.get('/teacher-details/:identification_no', getTeacherProfile);
 
 // Route to get the teacher's calendar details from another DB
 // router.get('/calendar/:id', getCalendarDetails);
