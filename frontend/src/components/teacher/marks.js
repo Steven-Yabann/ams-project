@@ -3,25 +3,25 @@ import axios from "axios";
 import './marks.css';
 
 const Marks = () => {
-  const [marksData, setMarksData] = useState([
-    { id: 5678, subject: "Math", marks: 74, assessmentType: "Exam" },
-    { id: 8786, subject: "Chemistry", marks: 65, assessmentType: "Quiz" },
-    { id: 4367, subject: "English", marks: 80, assessmentType: "Assignment" },
-  ]);
-  
+  const [marksData, setMarksData] = useState([]); // Initialize marksData as an empty array
   const [admissionNumbers, setAdmissionNumbers] = useState([]);
   const [formData, setFormData] = useState({
-    id: "",
+    studentId: "",
     subject: "",
     marks: "",
-    assessmentType: ""
+    typeofTest: ""
   });
 
   const subjects = ["Math", "Chemistry", "English", "Physics", "Biology", "History"];
-  const assessmentTypes = ["Exam", "Quiz", "Assignment", "Project"];
+  const typeofTests = ["Exam", "Quiz", "Assignment", "Project"];
 
-  // Fetch admission numbers from the backend
+  // Fetch admission numbers and marks data from the backend
   useEffect(() => {
+    fetchAdmissionNumbers();
+    fetchMarksData();
+  }, []); // Empty array to run this only on initial mount
+
+  const fetchAdmissionNumbers = () => {
     axios.get("http://localhost:4000/api/teacher/admission-numbers")
       .then((response) => {
         setAdmissionNumbers(response.data);
@@ -29,26 +29,56 @@ const Marks = () => {
       .catch((error) => {
         console.error("Error fetching admission numbers:", error);
       });
-  }, []);
+  };
+
+  const fetchMarksData = () => {
+    axios.get("http://localhost:4000/api/teacher/marks")
+      .then((response) => {
+        setMarksData(response.data); // Set fetched marks data
+      })
+      .catch((error) => {
+        console.error("Error fetching marks data:", error);
+      });
+  };
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleAddUpdate = () => {
-    const existingIndex = marksData.findIndex((data) => data.id === Number(formData.id));
-    const newData = { ...formData, marks: Number(formData.marks) };
-
+    const newData = { 
+      ...formData, 
+      marks: Number(formData.marks),
+      grade: calculateGrade(Number(formData.marks)), // Calculate grade
+      GPA: calculateGPA(Number(formData.marks)),    // Calculate GPA based on the marks
+    };
+  
+    const existingIndex = marksData.findIndex((data) => data.studentId === Number(formData.studentId));
+  
     if (existingIndex !== -1) {
-      const updatedMarks = [...marksData];
-      updatedMarks[existingIndex] = newData;
-      setMarksData(updatedMarks);
+      // If data exists, send a PUT request to update
+      axios.put(`http://localhost:4000/api/teacher/marks/${formData.studentId}`, newData)
+        .then((response) => {
+          fetchMarksData(); // Fetch updated marks data after update
+        })
+        .catch((error) => {
+          console.error("Error updating marks:", error);
+        });
     } else {
-      setMarksData([...marksData, newData]);
+      // If data doesn't exist, send a POST request to add new data
+      axios.post("http://localhost:4000/api/teacher/marks", newData)
+        .then((response) => {
+          fetchMarksData(); // Fetch updated marks data after adding
+        })
+        .catch((error) => {
+          console.error("Error adding marks:", error);
+        });
     }
-
-    setFormData({ id: "", subject: "", marks: "", assessmentType: "" });
+  
+    // Reset form data after adding or updating
+    setFormData({ studentId: "", subject: "", marks: "", typeofTest: "" });
   };
+  
 
   const handleEdit = (data) => {
     setFormData(data);
@@ -92,8 +122,8 @@ const Marks = () => {
       <div className="form-section">
         {/* Admission Number Dropdown */}
         <select
-          name="id"
-          value={formData.id}
+          name="studentId"
+          value={formData.studentId}
           onChange={handleInputChange}
           className="form-control"
         >
@@ -131,13 +161,13 @@ const Marks = () => {
 
         {/* Assessment Type Dropdown */}
         <select
-          name="assessmentType"
-          value={formData.assessmentType}
+          name="typeofTest"
+          value={formData.typeofTest}
           onChange={handleInputChange}
           className="form-control"
         >
           <option value="">Select Assessment Type</option>
-          {assessmentTypes.map((type) => (
+          {typeofTests.map((type) => (
             <option key={type} value={type}>
               {type}
             </option>
@@ -161,12 +191,12 @@ const Marks = () => {
         </thead>
         <tbody>
           {marksData.map((data) => (
-            <tr key={data.id}>
-              <td>{data.id}</td>
+            <tr key={data._id}>
+              <td>{data.studentId}</td>
               <td>{data.subject}</td>
               <td>{data.marks}</td>
               <td>{calculateGrade(data.marks)}</td>
-              <td>{data.assessmentType}</td>
+              <td>{data.typeofTest}</td>
               <td>
                 <button onClick={() => handleEdit(data)}>Edit</button>
                 <button onClick={() => handleDelete(data.id)}>Delete</button>
