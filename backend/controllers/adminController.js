@@ -5,12 +5,14 @@ const User = require('../models/userModel');
 const Book = require('../models/bookModel');
 const nodemailer = require('nodemailer');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 // Email setup - configure with your SMTP provider
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-        user: 'stevekiptoo1@gmail.com',
-        pass: 'tjupyferldmdkxjo'
+        user: 'glynn.tanui@strathmore.edu',
+        pass: 'mplj uvur zzfw phpv'
     }
 });
 
@@ -27,7 +29,7 @@ const generatePassword = () => {
 // Function to send an email
 const sendEmail = async (email, admissionNumber, userCategory, password) => {
     const mailOptions = {
-        from: 'stevekiptoo1@gmail.com', // sender address
+        from: 'glynn.tanui@strathmore.edu', // sender address
         to: email, // receiver address
         subject: 'Account Created Successfully',
         text: `Hello,

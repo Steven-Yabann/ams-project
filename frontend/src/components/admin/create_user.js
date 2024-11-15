@@ -5,13 +5,11 @@ import './css_files/create_user.css';
 export default function Create_user() {
     const [studentInfo, setStudentInfo] = useState({
         name: '',
-        admissionNumber: '',
         student_email: '',
     });
 
     const [employeeInfo, setEmployeeInfo] = useState({
         name: '',
-        identification_no: '',
         email: '',
         phone_no: '',
         role: '',
@@ -42,33 +40,46 @@ export default function Create_user() {
             if (status === 'Student') {
                 const studentData = {
                     name: studentInfo.name,
-                    admissionNumber: studentInfo.admissionNumber,
                     student_email: studentInfo.student_email,
+                    admissionNumber: Math.floor(10000 + Math.random() * 90000) // Example admission number
                 };
+                console.log("Submitting Student Data:", studentData);
+    
                 const response = await axios.post('http://localhost:4000/api/admin/student', studentData);
-                console.log(response.data.message);
+                console.log("Student Submission Response:", response.data);
+                alert(response.data.message);
             } else if (status === 'Employee') {
                 const employeeData = {
                     name: employeeInfo.name,
-                    identification_no: employeeInfo.identification_no,
                     email: employeeInfo.email,
                     phone_no: employeeInfo.phone_no,
                     role: employeeInfo.role,
                     department: employeeInfo.department,
+                    identification_no: Math.floor(10000 + Math.random() * 90000) // Example identification number
                 };
+                console.log("Submitting Employee Data:", employeeData);
+    
                 const response = await axios.post('http://localhost:4000/api/admin/teacher', employeeData);
-                console.log(response.data.message);
+                console.log("Employee Submission Response:", response.data);
+                alert(response.data.message);
             }
         } catch (error) {
+            console.error("Error encountered:", error);
+    
             if (error.response) {
-                console.error("There was an error submitting the form!", error.response.data);
+                console.error("Error Response Data:", error.response.data);
+                console.error("Error Status Code:", error.response.status);
+                console.error("Error Headers:", error.response.headers);
+    
                 alert(`Error: ${error.response.data.message || 'An error occurred'}`);
             } else {
-                console.error("Error:", error.message);
+                console.error("Network/Unknown Error:", error.message);
                 alert("Error: Unable to connect to the server.");
             }
         }
     };
+    
+    
 
     return (
         <div className="form-container">
@@ -93,17 +104,6 @@ export default function Create_user() {
                     </label>
                     <br />
                     <label>
-                        Admission Number:
-                        <input
-                            type="text"
-                            name="admissionNumber"
-                            value={studentInfo.admissionNumber}
-                            onChange={(e) => handleInput(e, 'Student')}
-                            className="input-field"
-                        />
-                    </label>
-                    <br />
-                    <label>
                         Student Email:
                         <input
                             type="email"
@@ -114,6 +114,7 @@ export default function Create_user() {
                         />
                     </label>
                     <br />
+                    <p>Note: Admission Number will be generated automatically.</p>
                     <button type="submit" className="submit-btn">Submit Student</button>
                 </form>
             )}
@@ -127,17 +128,6 @@ export default function Create_user() {
                             type="text"
                             name="name"
                             value={employeeInfo.name}
-                            onChange={(e) => handleInput(e, 'Employee')}
-                            className="input-field"
-                        />
-                    </label>
-                    <br />
-                    <label>
-                        Identification Number:
-                        <input
-                            type="text"
-                            name="identification_no"
-                            value={employeeInfo.identification_no}
                             onChange={(e) => handleInput(e, 'Employee')}
                             className="input-field"
                         />
@@ -196,6 +186,7 @@ export default function Create_user() {
                         </select>
                     </label>
                     <br />
+                    <p>Note: Identification Number will be generated automatically.</p>
                     <button type="submit" className="submit-btn">Submit Employee</button>
                 </form>
             )}
