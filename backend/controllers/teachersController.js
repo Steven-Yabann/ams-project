@@ -2,7 +2,6 @@
 // const Teacher = require('../models/teacherModel');
 const Marks = require('../models/marksModel');
 const Attendance = require('../models/attendanceModel');
-const mongoose = require('mongoose');
 const Student = require('../models/studentModel');
 const Teacher = require("../models/teacherModel");
 
