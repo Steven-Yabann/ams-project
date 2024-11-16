@@ -22,7 +22,6 @@ router.put('/books/:isbn/payment-status', updateLostBookPayment);
 
 router.get('/payments', getPaymentRecords);
 
-router.get('/fetch-students', fetchStudents);
 
 
 module.exports = router;
