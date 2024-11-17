@@ -9,6 +9,7 @@ const teacherRoutes = require('./routes/teacher');
 const calendarRoutes = require('./routes/calendar');
 const feeRoutes = require('./routes/feeRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const authRoutes = require('./routes/auth');
 
@@ -35,6 +36,8 @@ app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/attendance', attendanceRoutes);
+
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
 });
