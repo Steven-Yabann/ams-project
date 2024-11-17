@@ -1,5 +1,7 @@
 const Student = require('../models/studentModel');
 const Marks = require('../models/marksModel');
+const Profile = require('../models/profileModel');
+
 
 // Get marks for a specific student
 const getStudentMarks = async (req, res) => {
@@ -32,6 +34,43 @@ const getStudentMarks = async (req, res) => {
     } catch (error) {
         console.error('Error fetching student marks:', error);
         res.status(500).json({ message: 'Error fetching student marks' });
+    }
+};
+
+const updateProfilePicture = async (req, res) => {
+    try {
+        const { admissionNumber } = req.params;
+        const { profilePictureUrl } = req.body; // Accept profile picture URL
+
+        if (!profilePictureUrl) {
+            return res.status(400).json({ message: "Profile picture URL is required" });
+        }
+
+        const student = await Student.findOne({ admissionNumber });
+        
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        const profile = await Profile.findOne({ admissionNumber: student._id });
+
+        if (!profile) {
+            return res.status(404).json({ message: "Profile not found" });
+        }
+
+        profile.profilePicture = profilePictureUrl;
+        await profile.save();
+
+        const updatedProfileData = {
+            ...profile.toObject(),
+            name: student.name,
+            email: student.student_email,
+            admissionNumber: student.admissionNumber
+        };
+
+        res.status(200).json({ message: "Profile picture updated successfully", profile: updatedProfileData });
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
 
@@ -69,5 +108,6 @@ const getStudentSubjects = async (req, res) => {
 module.exports = {
     getStudentMarks,
     getStudentProfile,
-    getStudentSubjects
+    getStudentSubjects,
+    updateProfilePicture
 };
