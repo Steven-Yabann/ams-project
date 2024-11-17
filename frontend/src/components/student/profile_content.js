@@ -1,16 +1,40 @@
 import axios from 'axios';
-import { User } from 'lucide-react';
+import {
+  Award,
+  Book,
+  Calendar,
+  Edit3,
+  Globe,
+  Home,
+  Mail,
+  Phone,
+  Save,
+  School,
+  User,
+  UserPlus,
+  X
+} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, Form, Nav, Tab } from 'react-bootstrap';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  Nav,
+  Row,
+  Spinner,
+  Tab
+} from 'react-bootstrap';
 
 const API_BASE_URL = 'http://localhost:4000/api/profile';
 
 const Profile = () => {
   return (
-    <div className="d-flex min-vh-100">
-      <div className="flex-grow-1 bg-light p-3">
-        <ProfileContent />
-      </div>
+    <div className="min-vh-100 bg-light py-4">
+      <ProfileContent />
     </div>
   );
 };
@@ -44,43 +68,70 @@ const ProfileContent = () => {
     fetchProfile();
   }, []);
 
-  if (loading) return <div className="text-center mt-5">Loading...</div>;
-  if (error) return (
+  if (loading) return (
     <div className="text-center mt-5">
-      <Alert variant="danger">{error}</Alert>
-      <Button variant="primary" onClick={() => window.location.href = '/login'}>
-        Go to Login
-      </Button>
+      <Spinner animation="border" variant="primary" />
+      <p className="mt-2">Loading your profile...</p>
     </div>
   );
 
+  if (error) return (
+    <Container className="text-center mt-5">
+      <Alert variant="danger" className="d-inline-flex align-items-center">
+        <X size={24} className="me-2" />
+        {error}
+      </Alert>
+      <div className="mt-3">
+        <Button variant="primary" onClick={() => window.location.href = '/login'}>
+          Return to Login
+        </Button>
+      </div>
+    </Container>
+  );
+
   return (
-    <main className="container">
-      <h1 className="mb-4 text-center">Student Profile</h1>
+    <Container>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="mb-0">
+          <School className="me-2 d-inline-block" />
+          Student Profile
+        </h1>
+        <Badge bg="primary" className="px-3 py-2">
+          ID: {profileData?.admissionNumber}
+        </Badge>
+      </div>
+
       {successMessage && (
-        <Alert variant="success" onClose={() => setSuccessMessage('')} dismissible>
+        <Alert 
+          variant="success" 
+          onClose={() => setSuccessMessage('')} 
+          dismissible
+          className="d-flex align-items-center"
+        >
+          <Award className="me-2" />
           {successMessage}
         </Alert>
       )}
-      <div className="row">
-        <div className="col-md-4 mb-4">
+
+      <Row>
+        <Col md={4} className="mb-4">
           <ProfileInfo 
             profileData={profileData} 
             setProfileData={setProfileData}
             setSuccessMessage={setSuccessMessage}
             setError={setError}
           />
-        </div>
-        <div className="col-md-8">
+        </Col>
+        <Col md={8}>
           <DetailsTabs 
             profileData={profileData} 
             setProfileData={setProfileData}
             setSuccessMessage={setSuccessMessage}
             setError={setError}
           />
-        </div>
-      </div>
-    </main>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
@@ -121,8 +172,19 @@ const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError 
 
   const readOnlyFields = ['name', 'email', 'admissionNumber'];
 
+  const getFieldIcon = (field) => {
+    switch(field) {
+      case 'email': return <Mail size={18} className="text-muted" />;
+      case 'phone': return <Phone size={18} className="text-muted" />;
+      case 'homeAddress': return <Home size={18} className="text-muted" />;
+      case 'nationality': return <Globe size={18} className="text-muted" />;
+      case 'dob': return <Calendar size={18} className="text-muted" />;
+      default: return null;
+    }
+  };
+
   return (
-    <Card>
+    <Card className="shadow-sm">
       <Card.Body>
         <div className="text-center mb-4">
           <div className="position-relative mx-auto" style={{
@@ -130,7 +192,8 @@ const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError 
             height: '150px',
             borderRadius: '50%',
             border: '4px solid #007bff',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
           }}>
             {formData.profilePicture ? (
               <img 
@@ -140,19 +203,23 @@ const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError 
               />
             ) : (
               <div className="d-flex align-items-center justify-content-center bg-light h-100">
-                <User size={64} />
+                <User size={64} className="text-primary" />
               </div>
             )}
           </div>
           {isEditing && (
-            <Form.Group controlId="profilePicture" className="mt-2">
-              <Form.Label>Profile Picture URL</Form.Label>
+            <Form.Group controlId="profilePicture" className="mt-3">
+              <Form.Label className="d-flex align-items-center justify-content-center">
+                <Edit3 size={18} className="me-2" />
+                Profile Picture URL
+              </Form.Label>
               <Form.Control
                 type="text"
                 name="profilePicture"
                 value={formData.profilePicture}
                 onChange={handleInputChange}
                 placeholder="Enter image URL"
+                className="text-center"
               />
             </Form.Group>
           )}
@@ -160,24 +227,52 @@ const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError 
         
         <Form>
           {Object.entries(formData).map(([field, value]) => (
-            <Form.Group key={field} controlId={field} className="mb-3">
-              <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
-              <Form.Control 
-                type={field === 'dob' ? 'date' : 'text'}
-                name={field}
-                value={value}
-                onChange={handleInputChange}
-                readOnly={readOnlyFields.includes(field)}
-                disabled={!isEditing && !readOnlyFields.includes(field)}
-              />
-            </Form.Group>
+            field !== 'profilePicture' && (
+              <Form.Group key={field} controlId={field} className="mb-3">
+                <Form.Label className="d-flex align-items-center">
+                  {getFieldIcon(field)}
+                  <span className="ms-2">
+                    {field.split(/(?=[A-Z])/).join(' ').charAt(0).toUpperCase() + 
+                     field.split(/(?=[A-Z])/).join(' ').slice(1)}
+                  </span>
+                </Form.Label>
+                <Form.Control 
+                  type={field === 'dob' ? 'date' : field === 'email' ? 'email' : 'text'}
+                  name={field}
+                  value={value}
+                  onChange={handleInputChange}
+                  readOnly={readOnlyFields.includes(field)}
+                  disabled={!isEditing && !readOnlyFields.includes(field)}
+                  className={readOnlyFields.includes(field) ? 'bg-light' : ''}
+                />
+              </Form.Group>
+            )
           ))}
-          <div className="d-flex justify-content-between">
-            <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
-              {isEditing ? 'Cancel' : 'Edit Profile'}
+          <div className="d-flex justify-content-between mt-4">
+            <Button 
+              variant={isEditing ? "outline-secondary" : "outline-primary"} 
+              onClick={() => setIsEditing(!isEditing)}
+              className="d-flex align-items-center"
+            >
+              {isEditing ? (
+                <>
+                  <X size={18} className="me-2" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Edit3 size={18} className="me-2" />
+                  Edit Profile
+                </>
+              )}
             </Button>
             {isEditing && (
-              <Button variant="primary" onClick={handleSave}>
+              <Button 
+                variant="primary" 
+                onClick={handleSave}
+                className="d-flex align-items-center"
+              >
+                <Save size={18} className="me-2" />
                 Save Changes
               </Button>
             )}
@@ -191,17 +286,26 @@ const ProfileInfo = ({ profileData, setProfileData, setSuccessMessage, setError 
 const DetailsTabs = ({ profileData, setProfileData, setSuccessMessage, setError }) => {
   return (
     <Tab.Container defaultActiveKey="academic">
-      <Card>
-        <Card.Header>
-          <Nav variant="tabs">
+      <Card className="shadow-sm">
+        <Card.Header className="bg-white">
+          <Nav variant="tabs" className="border-bottom-0">
             <Nav.Item>
-              <Nav.Link eventKey="academic">Academic Details</Nav.Link>
+              <Nav.Link eventKey="academic" className="d-flex align-items-center">
+                <Book size={18} className="me-2" />
+                Academic Details
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="personal">Personal Details</Nav.Link>
+              <Nav.Link eventKey="personal" className="d-flex align-items-center">
+                <User size={18} className="me-2" />
+                Personal Details
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="guardian">Guardian Details</Nav.Link>
+              <Nav.Link eventKey="guardian" className="d-flex align-items-center">
+                <UserPlus size={18} className="me-2" />
+                Guardian Details
+              </Nav.Link>
             </Nav.Item>
           </Nav>
         </Card.Header>
@@ -272,24 +376,52 @@ const AcademicDetails = ({ profileData, setProfileData, setSuccessMessage, setEr
 
   return (
     <Form>
-      {Object.entries(academicData).map(([field, value]) => (
-        <Form.Group key={field} controlId={field} className="mb-3">
-          <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
-          <Form.Control
-            type="text"
-            name={field}
-            value={value}
-            onChange={handleInputChange}
-            disabled={!isEditing}
-          />
-        </Form.Group>
-      ))}
-      <div className="d-flex justify-content-between">
-        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? 'Cancel' : 'Edit Details'}
+      <Row>
+        {Object.entries(academicData).map(([field, value]) => (
+          <Col md={6} key={field}>
+            <Form.Group controlId={field} className="mb-3">
+              <Form.Label className="d-flex align-items-center">
+                <Book size={18} className="me-2 text-primary" />
+                {field.split(/(?=[A-Z])/).join(' ').charAt(0).toUpperCase() + 
+                 field.split(/(?=[A-Z])/).join(' ').slice(1)}
+              </Form.Label>
+              <Form.Control
+                type="text"
+                name={field}
+                value={value}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className={!isEditing ? 'bg-light' : ''}
+              />
+            </Form.Group>
+          </Col>
+        ))}
+      </Row>
+      <div className="d-flex justify-content-between mt-3">
+        <Button 
+          variant={isEditing ? "outline-secondary" : "outline-primary"}
+          onClick={() => setIsEditing(!isEditing)}
+          className="d-flex align-items-center"
+        >
+          {isEditing ? (
+            <>
+              <X size={18} className="me-2" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Edit3 size={18} className="me-2" />
+              Edit Details
+            </>
+          )}
         </Button>
         {isEditing && (
-          <Button variant="primary" onClick={handleSave}>
+          <Button 
+            variant="primary" 
+            onClick={handleSave}
+            className="d-flex align-items-center"
+          >
+            <Save size={18} className="me-2" />
             Save Changes
           </Button>
         )}
@@ -311,7 +443,6 @@ const PersonalDetails = ({ profileData, setProfileData, setSuccessMessage, setEr
     const { name, value } = e.target;
     setPersonalData(prev => ({ ...prev, [name]: value }));
   };
-
   const handleSave = async () => {
     try {
       const admissionNumber = sessionStorage.getItem('admissionNumber');
@@ -333,27 +464,66 @@ const PersonalDetails = ({ profileData, setProfileData, setSuccessMessage, setEr
     }
   };
 
+  const getFieldIcon = (field) => {
+    switch(field) {
+      case 'religion': return <Globe size={18} className="text-primary" />;
+      case 'languages': return <Book size={18} className="text-primary" />;
+      case 'city': return <Home size={18} className="text-primary" />;
+      case 'country': return <Globe size={18} className="text-primary" />;
+      default: return null;
+    }
+  };
+
   return (
     <Form>
-      {Object.entries(personalData).map(([field, value]) => (
-        <Form.Group key={field} controlId={field} className="mb-3">
-          <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Form.Label>
-          <Form.Control
-            type="text"
-            name={field}
-            value={value}
-            onChange={handleInputChange}
-            disabled={!isEditing}
-            placeholder={field === 'languages' ? 'Enter languages separated by commas' : `Enter ${field}`}
-          />
-        </Form.Group>
-      ))}
-      <div className="d-flex justify-content-between">
-        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? 'Cancel' : 'Edit Details'}
+      <Row>
+        {Object.entries(personalData).map(([field, value]) => (
+          <Col md={6} key={field}>
+            <Form.Group controlId={field} className="mb-3">
+              <Form.Label className="d-flex align-items-center">
+                {getFieldIcon(field)}
+                <span className="ms-2">
+                  {field.charAt(0).toUpperCase() + field.slice(1)}
+                </span>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                name={field}
+                value={value}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className={!isEditing ? 'bg-light' : ''}
+                placeholder={field === 'languages' ? 'Enter languages separated by commas' : `Enter ${field}`}
+              />
+            </Form.Group>
+          </Col>
+        ))}
+      </Row>
+      <div className="d-flex justify-content-between mt-3">
+        <Button 
+          variant={isEditing ? "outline-secondary" : "outline-primary"}
+          onClick={() => setIsEditing(!isEditing)}
+          className="d-flex align-items-center"
+        >
+          {isEditing ? (
+            <>
+              <X size={18} className="me-2" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Edit3 size={18} className="me-2" />
+              Edit Details
+            </>
+          )}
         </Button>
         {isEditing && (
-          <Button variant="primary" onClick={handleSave}>
+          <Button 
+            variant="primary" 
+            onClick={handleSave}
+            className="d-flex align-items-center"
+          >
+            <Save size={18} className="me-2" />
             Save Changes
           </Button>
         )}
@@ -396,29 +566,72 @@ const GuardianDetails = ({ profileData, setProfileData, setSuccessMessage, setEr
     }
   };
 
+  const getFieldIcon = (field) => {
+    switch(field) {
+      case 'parentName': return <User size={18} className="text-primary" />;
+      case 'relationship': return <UserPlus size={18} className="text-primary" />;
+      case 'contactNumber': 
+      case 'emergencyContact':
+      case 'alternativeContact':
+        return <Phone size={18} className="text-primary" />;
+      case 'email': return <Mail size={18} className="text-primary" />;
+      case 'occupation': return <Book size={18} className="text-primary" />;
+      case 'address': return <Home size={18} className="text-primary" />;
+      default: return null;
+    }
+  };
+
   return (
     <Form>
-      {Object.entries(guardianData).map(([field, value]) => (
-        <Form.Group key={field} controlId={field} className="mb-3">
-          <Form.Label>
-            {field.split(/(?=[A-Z])/).join(' ').charAt(0).toUpperCase() + 
-             field.split(/(?=[A-Z])/).join(' ').slice(1)}
-          </Form.Label>
-          <Form.Control
-            type={field === 'email' ? 'email' : 'text'}
-            name={field}
-            value={value}
-            onChange={handleInputChange}
-            disabled={!isEditing}
-          />
-        </Form.Group>
-      ))}
-      <div className="d-flex justify-content-between">
-        <Button variant="secondary" onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? 'Cancel' : 'Edit Details'}
+      <Row>
+        {Object.entries(guardianData).map(([field, value]) => (
+          <Col md={6} key={field}>
+            <Form.Group controlId={field} className="mb-3">
+              <Form.Label className="d-flex align-items-center">
+                {getFieldIcon(field)}
+                <span className="ms-2">
+                  {field.split(/(?=[A-Z])/).join(' ').charAt(0).toUpperCase() + 
+                   field.split(/(?=[A-Z])/).join(' ').slice(1)}
+                </span>
+              </Form.Label>
+              <Form.Control
+                type={field === 'email' ? 'email' : 
+                      field.includes('contact') || field === 'contactNumber' ? 'tel' : 'text'}
+                name={field}
+                value={value}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className={!isEditing ? 'bg-light' : ''}
+              />
+            </Form.Group>
+          </Col>
+        ))}
+      </Row>
+      <div className="d-flex justify-content-between mt-3">
+        <Button 
+          variant={isEditing ? "outline-secondary" : "outline-primary"}
+          onClick={() => setIsEditing(!isEditing)}
+          className="d-flex align-items-center"
+        >
+          {isEditing ? (
+            <>
+              <X size={18} className="me-2" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Edit3 size={18} className="me-2" />
+              Edit Details
+            </>
+          )}
         </Button>
         {isEditing && (
-          <Button variant="primary" onClick={handleSave}>
+          <Button 
+            variant="primary" 
+            onClick={handleSave}
+            className="d-flex align-items-center"
+          >
+            <Save size={18} className="me-2" />
             Save Changes
           </Button>
         )}
