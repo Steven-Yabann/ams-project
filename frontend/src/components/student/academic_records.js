@@ -1,187 +1,210 @@
 import axios from 'axios';
-import { LogOut, User } from 'lucide-react';
+import { Award, BookOpen, Target, Trophy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Badge, Card, Col, Container, Row, Table } from 'react-bootstrap';
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import './studentmarks.css';
 
-const API_BASE_URL = 'http://localhost:4000/api';
+const StudentMarks = () => {
+    const [marksData, setMarksData] = useState({});
+    const [studentProfile, setStudentProfile] = useState(null);
+    const [overallGPA, setOverallGPA] = useState(0);
+    const [subjects, setSubjects] = useState([]);
+    const [selectedSubject, setSelectedSubject] = useState('all');
+    const [chartData, setChartData] = useState([]);
 
-const DetailedStudentProfile = ({ student }) => {
-  const [profilePicture, setProfilePicture] = useState(null);
+    // Assuming we get studentId from authentication context or props
+    const admissionNumber = sessionStorage.getItem('admissionNumber');
+ // Replace with actual student ID
 
-  const handlePictureChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePicture(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+    useEffect(() => {
+        fetchStudentData();
+    }, []);
 
-  return (
-    <Card className="student-profile bg-white rounded-lg shadow-md p-6">
-      <Card.Body>
-        <div className="text-center mb-4">
-          <div style={{
-            width: '150px',
-            height: '150px',
-            margin: '0 auto',
-            borderRadius: '50%',
-            border: '4px solid #2563eb',
-            overflow: 'hidden'
-          }}>
-            {profilePicture ? (
-              <img src={profilePicture} alt="Profile" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-            ) : (
-              <div className="d-flex align-items-center justify-content-center bg-light h-100">
-                <User size={64} />
-              </div>
-            )}
-          </div>
-          <input type="file" onChange={handlePictureChange} className="mt-2" />
-        </div>
-        <h2 className="text-2xl font-bold mb-4">{student.name}</h2>
-        <p className="mb-2"><strong>Admission No:</strong> {student.admissionNo}</p>
-        <p className="mb-4"><strong>Class:</strong> {student.class}</p>
-      </Card.Body>
-    </Card>
-  );
-};
+    const fetchStudentData = async () => {
+        try {
+            const [profileRes, marksRes] = await Promise.all([
+                axios.get(`http://localhost:4000/api/academic/profile/${admissionNumber}`),
+                axios.get(`http://localhost:4000/api/academic/marks/${admissionNumber}`)
+            ]);
 
-const AcademicGraph = ({ data }) => (
-  <Card className="mb-8">
-    <Card.Body>
-      <h2 className="text-xl font-semibold mb-4">Academic Performance</h2>
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="subject" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="Test 1" fill="#8884d8" />
-          <Bar dataKey="Test 2" fill="#82ca9d" />
-          <Bar dataKey="Test 3" fill="#ffc658" />
-          <Bar dataKey="Exam" fill="#ff7300" />
-        </BarChart>
-      </ResponsiveContainer>
-    </Card.Body>
-  </Card>
-);
+            setStudentProfile(profileRes.data);
+            setMarksData(marksRes.data.marks);
+            setOverallGPA(marksRes.data.overallGPA);
+            
+            // Prepare chart data
+            const chartData = prepareChartData(marksRes.data.rawMarks);
+            setChartData(chartData);
 
-const GradesTable = ({ data }) => (
-  <Card>
-    <Card.Body>
-      <h2 className="text-xl font-semibold mb-4">Detailed Grades</h2>
-      <div className="table-responsive">
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Subject</th>
-              <th>Test 1</th>
-              <th>Test 2</th>
-              <th>Test 3</th>
-              <th>Average</th>
-              <th>Exam</th>
-              <th>Final Grade</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, index) => (
-              <tr key={index}>
-                <td className="font-medium">{row.subject}</td>
-                <td>{row.test1}</td>
-                <td>{row.test2}</td>
-                <td>{row.test3}</td>
-                <td>{row.average}</td>
-                <td>{row.exam}</td>
-                <td className="font-medium">{row.finalGrade}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Card.Body>
-  </Card>
-);
-
-const AcademicRecords = () => {
-  const [studentData, setStudentData] = useState(null);
-  const [academicRecords, setAcademicRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchAcademicRecords = async () => {
-      try {
-        // You'll need to get the studentId from your auth context or URL params
-        const studentId = 'your-student-id';
-        const response = await axios.get(`${API_BASE_URL}/academic/records`, {
-          params: {
-            studentId,
-            academicYear: '2024', // You might want to make these dynamic
-            term: '1'
-          }
-        });
-
-        setStudentData(response.data.student);
-        
-        // Transform the academic records for the graph
-        const graphData = response.data.academicRecords.map(record => ({
-          subject: record.subject,
-          'Test 1': record.test1,
-          'Test 2': record.test2,
-          'Test 3': record.test3,
-          'Exam': record.exam
-        }));
-
-        setAcademicRecords(response.data.academicRecords);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
+            // Extract unique subjects
+            const subjectsList = Object.keys(marksRes.data.marks);
+            setSubjects(subjectsList);
+        } catch (error) {
+            console.error('Error fetching student data:', error);
+        }
     };
 
-    fetchAcademicRecords();
-  }, []);
+    const prepareChartData = (rawMarks) => {
+        return rawMarks.map(mark => ({
+            subject: mark.subject,
+            marks: mark.marks,
+            grade: mark.grade,
+            testType: mark.typeofTest
+        }));
+    };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!studentData) return <div>No data available</div>;
+    const getGradeColor = (grade) => {
+        const colors = {
+            'A': 'success',
+            'B': 'primary',
+            'C': 'info',
+            'D': 'warning',
+            'E': 'danger'
+        };
+        return colors[grade] || 'secondary';
+    };
 
-  return (
-    <div className="bg-light min-vh-100">
-      <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Student Dashboard</h1>
-        <button className="logout-button bg-white text-blue-600 px-4 py-2 rounded-full flex items-center">
-          <LogOut size={20} className="mr-2" />
-          Log out
-        </button>
-      </header>
-      
-      <main className="container py-4">
-        <h1 className="text-3xl font-bold mb-4">Academic Records</h1>
-        <div className="row">
-          <div className="col-md-4 mb-4">
-            <DetailedStudentProfile student={studentData} />
-          </div>
-          <div className="col-md-8">
-            <AcademicGraph data={academicRecords.map(record => ({
-              subject: record.subject,
-              'Test 1': record.test1,
-              'Test 2': record.test2,
-              'Test 3': record.test3,
-              'Exam': record.exam
-            }))} />
-            <GradesTable data={academicRecords} />
-          </div>
-        </div>
-      </main>
-    </div>
-  );
+    return (
+        <Container fluid className="student-marks-container">
+            {studentProfile && (
+                <Row className="mb-4">
+                    <Col>
+                        <Card className="profile-card">
+                            <Card.Body>
+                                <div className="d-flex align-items-center">
+                                    <BookOpen size={24} className="me-2" />
+                                    <div>
+                                        <h2>{studentProfile.name}</h2>
+                                        <p className="mb-0">Admission No: {studentProfile.admissionNumber}</p>
+                                    </div>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+            )}
+
+            <Row className="mb-4">
+                <Col md={4}>
+                    <Card className="metric-card">
+                        <Card.Body>
+                            <div className="d-flex align-items-center">
+                                <Award size={24} className="me-2" />
+                                <div>
+                                    <h6>Overall GPA</h6>
+                                    <h3>{overallGPA}</h3>
+                                </div>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col md={4}>
+                    <Card className="metric-card">
+                        <Card.Body>
+                            <div className="d-flex align-items-center">
+                                <Trophy size={24} className="me-2" />
+                                <div>
+                                    <h6>Total Subjects</h6>
+                                    <h3>{subjects.length}</h3>
+                                </div>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col md={4}>
+                    <Card className="metric-card">
+                        <Card.Body>
+                            <div className="d-flex align-items-center">
+                                <Target size={24} className="me-2" />
+                                <div>
+                                    <h6>Best Grade</h6>
+                                    <h3>{chartData.reduce((best, current) => 
+                                        best.grade < current.grade ? best : current, 
+                                        { grade: 'E' }
+                                    ).grade}</h3>
+                                </div>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row className="mb-4">
+                <Col>
+                    <Card>
+                        <Card.Header>
+                            <h5>Performance Overview</h5>
+                        </Card.Header>
+                        <Card.Body>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="subject" />
+                                    <YAxis domain={[0, 100]} />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="marks" stroke="#8884d8" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row>
+                <Col>
+                    <Card>
+                        <Card.Header className="d-flex justify-content-between align-items-center">
+                            <h5>Detailed Marks</h5>
+                            <select 
+                                className="form-select w-auto" 
+                                value={selectedSubject}
+                                onChange={(e) => setSelectedSubject(e.target.value)}
+                            >
+                                <option value="all">All Subjects</option>
+                                {subjects.map(subject => (
+                                    <option key={subject} value={subject}>{subject}</option>
+                                ))}
+                            </select>
+                        </Card.Header>
+                        <Card.Body>
+                            <Table responsive>
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Test Type</th>
+                                        <th>Marks</th>
+                                        <th>Grade</th>
+                                        <th>GPA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(marksData).map(([subject, marks]) => {
+                                        if (selectedSubject === 'all' || selectedSubject === subject) {
+                                            return marks.map((mark, index) => (
+                                                <tr key={`${subject}-${index}`}>
+                                                    <td>{subject}</td>
+                                                    <td>{mark.typeofTest}</td>
+                                                    <td>{mark.marks}</td>
+                                                    <td>
+                                                        <Badge bg={getGradeColor(mark.grade)}>
+                                                            {mark.grade}
+                                                        </Badge>
+                                                    </td>
+                                                    <td>{mark.GPA}</td>
+                                                </tr>
+                                            ));
+                                        }
+                                        return null;
+                                    })}
+                                </tbody>
+                            </Table>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+        </Container>
+    );
 };
 
-export default AcademicRecords;
+export default StudentMarks;
