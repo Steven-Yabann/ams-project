@@ -5,6 +5,7 @@ import './css_files/verify_fees.css';
 export default function VerifyFees() {
     const [admissionNumber, setAdmissionNumber] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [paymentAmount, setPaymentAmount] = useState(""); // Add state for payment amount
     const [feeStatus, setFeeStatus] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -39,7 +40,7 @@ export default function VerifyFees() {
     };
 
     const handleVerifyFees = async () => {
-        console.log("Submitting:", { studentId: admissionNumber, phoneNumber });
+        console.log("Submitting:", { admissionNumber, phoneNumber, paymentAmount });
         setLoading(true);
         setError("");
 
@@ -48,7 +49,8 @@ export default function VerifyFees() {
 
             const initiateResponse = await axios.post("http://localhost:4000/api/verify-fees/initiate-payment", {
                 admissionNumber,
-                phoneNumber
+                phoneNumber,
+                paymentAmount, // Include payment amount
             });
 
             const { CheckoutRequestID } = initiateResponse.data;
@@ -57,7 +59,8 @@ export default function VerifyFees() {
                 try {
                     const queryResponse = await axios.post("http://localhost:4000/api/verify-fees/query-status", {
                         checkoutRequestID: CheckoutRequestID,
-                        studentId: admissionNumber
+                        studentId: admissionNumber,
+                        paymentAmount, // Include payment amount in the query
                     });
 
                     if (queryResponse.status === 200) {
@@ -105,35 +108,18 @@ export default function VerifyFees() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                 />
-                <button onClick={handleVerifyFees} disabled={loading || !admissionNumber || !phoneNumber}>
+
+                <input
+                    type="number"
+                    placeholder="Enter Payment Amount"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(Number(e.target.value))} // Parse the amount to a number
+                />
+
+                <button onClick={handleVerifyFees} disabled={loading || !admissionNumber || !phoneNumber || !paymentAmount}>
                     {loading ? "Verifying..." : "Verify Fees"}
                 </button>
             </div>
-            {/* {feeStatus && (
-                <div className="fee-status">
-                    <h2>Fee Details</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Total Fees</th>
-                                <th>Fees Paid</th>
-                                <th>Date of Payment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>{feeStatus.studentId}</td>
-                                <td>{feeStatus.totalFees}</td>
-                                <td>{feeStatus.feesPaid}</td>
-                                <td>{new Date(feeStatus.paymentDate).toLocaleDateString()}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p>Status: {feeStatus.isCleared ? "Cleared" : "Pending"}</p>
-                </div>
-            )}
-            {error && <p className="error">{error}</p>} */}
 
             <div className="student-table">
                 <h2>Students Who Have Paid Fees</h2>
@@ -162,14 +148,13 @@ export default function VerifyFees() {
                             .map((student) => (
                                 <tr key={student.studentId}>
                                     <td>{student.studentId}</td>
-                                    <td>{student.name}</td> {/* Display the name */}
+                                    <td>{student.name}</td>
                                     <td>{student.totalFees}</td>
                                     <td>{student.feesPaid}</td>
                                     <td>{new Date(student.paymentDate).toLocaleDateString()}</td>
                                 </tr>
                             ))}
                     </tbody>
-
                 </table>
             </div>
         </div>
