@@ -219,7 +219,7 @@ export default function AdminDashboard() {
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Line type="monotone" dataKey="students" stroke="#5743E" name="Students" />
+                            <Line type="monotone" dataKey="students" stroke="#4CAF50" name="Students" />
                             <Line type="monotone" dataKey="teachers" stroke="#FF7043" name="Teachers" />
                         </LineChart>
                     </ResponsiveContainer>
