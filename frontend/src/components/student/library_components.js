@@ -38,7 +38,6 @@ const BorrowedBooks = ({ studentId }) => {
               <th>Title</th>
               <th>Author</th>
               <th>Borrow Date</th>
-              <th>Return Date</th>
               <th>Remaining Days</th>
               <th>Status</th>
             </tr>
@@ -49,7 +48,6 @@ const BorrowedBooks = ({ studentId }) => {
                 <td>{book.bookTitle}</td>
                 <td>{book.author}</td>
                 <td>{new Date(book.borrowDate).toLocaleDateString()}</td>
-                <td>{new Date(book.returnDate).toLocaleDateString()}</td>
                 <td>{book.remainingDays}</td>
                 <td
                   style={{
