@@ -20,6 +20,8 @@ import './css_files/AdminDashboard.css';
 export default function AdminDashboard() {
     const [teachers, setTeachers] = useState([]);
     const [students, setStudents] = useState([]);
+    const [marks, setMarks] = useState([]);
+    const [loadingMarks, setLoadingMarks] = useState(true);
     const [loadingTeachers, setLoadingTeachers] = useState(true);
     const [loadingStudents, setLoadingStudents] = useState(true);
     const [stats, setStats] = useState({
@@ -59,6 +61,18 @@ export default function AdminDashboard() {
             });
     }
 
+    const fetchMarks = async () => {
+        axios.get('http://localhost:4000/api/admin/marks')
+            .then((response) => {
+                setMarks(response.data);
+                setLoadingMarks(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching marks data:", error);
+                setLoadingMarks(false);
+            });
+    }
+
     const fetchStudents = async () => {
         axios.get('http://localhost:4000/api/admin/students')
             .then((response) => {
@@ -71,10 +85,19 @@ export default function AdminDashboard() {
             });
     }
 
+    const transformedData = marks.map((mark) => ({
+        typeofTest: mark._id.typeofTest,
+        subject: mark._id.subject,
+        average: mark.averageMarks,
+        highest: mark.highestMarks,
+        lowest: mark.lowestMarks,
+    }));
+
     useEffect(() => {
         fetchStats();
         fetchTeachers();
         fetchStudents();
+        fetchMarks();
     }, []);
 
     if (loading) {
@@ -198,6 +221,26 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            <div className="chart-container">
+                <h2>Exam Marks Data (Bar Graph)</h2>
+                {loadingMarks ? (
+                    <p>Loading marks data...</p>
+                ) : (
+                    <ResponsiveContainer width="100%" height={400}>
+                        <BarChart data={transformedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="subject" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="average" fill="#8884d8" name="Average Marks" />
+                            <Bar dataKey="highest" fill="#82ca9d" name="Highest Marks" />
+                            <Bar dataKey="lowest" fill="#ff8042" name="Lowest Marks" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
+
             <div className="table-container">
                 <h2>Teachers</h2>
                 {loadingTeachers ? (
@@ -257,6 +300,8 @@ export default function AdminDashboard() {
                     </table>
                 )}
             </div>
+
+            
         </div>
 
 

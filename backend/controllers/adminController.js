@@ -4,6 +4,7 @@ const Teacher = require('../models/teacherModel');
 const User = require('../models/userModel');
 const Book = require('../models/bookModel');
 const Fee = require('../models/fee');
+const Marks = require('../models/marksModel');
 const nodemailer = require('nodemailer');
 
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -254,5 +255,27 @@ const dashboardStats = async (req, res) => {
     }
 };
 
+const getMarksData = async (req, res) => {
+    try {
+        const marksData = await Marks.aggregate([
+            {
+                $group: {
+                    _id: { typeofTest: "$typeofTest", subject: "$subject" },
+                    averageMarks: { $avg: "$marks" },
+                    highestMarks: { $max: "$marks" },
+                    lowestMarks: { $min: "$marks" },
+                },
+            },
+            {
+                $sort: { "_id.typeofTest": 1, "_id.subject": 1 }, // Sort by test type and subject
+            },
+        ]);
 
-module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats };
+        res.status(200).json(marksData);
+    } catch (error) {
+        console.error("Error fetching marks data:", error);
+        res.status(500).json({ message: "Error fetching marks data" });
+    }
+};
+
+module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData };
