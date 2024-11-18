@@ -1,10 +1,12 @@
-// fee model
+
 const mongoose = require("mongoose");
-// controller modifications
+var https = require('follow-redirects').https;
+var fs = require('fs');
 const unirest = require("unirest");
 const Fee = require("../models/fee");
 const Student = require("../models/studentModel");
 let accessToken = "";
+
 
 // Generate an access token
 async function getAccessToken() {
@@ -22,6 +24,42 @@ async function getAccessToken() {
         });
     });
 }
+
+const sendSmsNotification = (phoneNumber, message) => {
+    return new Promise((resolve, reject) => {
+        const options = {
+            method: 'POST',
+            hostname: '8kr8k1.api.infobip.com',
+            path: '/sms/2/text/advanced',
+            headers: {
+                Authorization: 'App 5b0488168a523eafddc3112b93dd962f-1b6ed2ee-26e3-4bc8-9839-3cb4ab80ca32',
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            maxRedirects: 20,
+        };
+
+        const req = https.request(options, (res) => {
+            const chunks = [];
+            res.on('data', (chunk) => chunks.push(chunk));
+            res.on('end', () => resolve(Buffer.concat(chunks).toString()));
+            res.on('error', (error) => reject(error));
+        });
+
+        const postData = JSON.stringify({
+            messages: [
+                {
+                    destinations: [{ to: phoneNumber }],
+                    from: '447491163443', // Replace with your sender ID
+                    text: message,
+                },
+            ],
+        });
+
+        req.write(postData);
+        req.end();
+    });
+};
 
 // Initiate STK Push payment
 const initiatePayment = async (req, res) => {
@@ -66,7 +104,7 @@ const initiatePayment = async (req, res) => {
 const queryPaymentStatus = async (req, res) => {
     console.log("Querying payment status for:", req.body);
     try {
-        const { checkoutRequestID, admissionNumber, paymentAmount } = req.body;
+        const { checkoutRequestID, admissionNumber, paymentAmount, phoneNumber } = req.body;
         await getAccessToken();
 
         const statusResponse = await new Promise((resolve, reject) => {
@@ -92,11 +130,9 @@ const queryPaymentStatus = async (req, res) => {
             let student = await Fee.findOne({ admissionNumber });
 
             if (!student) {
-                // Student not found in the Fee collection, check the Student collection
                 const studentFromStudentsTable = await Student.findOne({ admissionNumber });
                 
                 if (!studentFromStudentsTable) {
-                    // Student not found in either collection
                     return res.status(404).json({
                         message: `No student found with admission number ${admissionNumber}. Please check and try again.`
                     });
@@ -107,11 +143,14 @@ const queryPaymentStatus = async (req, res) => {
                     admissionNumber,
                     name: studentFromStudentsTable.name,
                     feesPaid: paymentAmount,
-                    isCleared: paymentAmount >= 10000, // Check if fees are fully paid
+                    isCleared: paymentAmount >= 10000,
                     paymentDate: new Date()
                 });
 
                 await newFee.save();
+
+                const message = `Hello ${studentFromStudentsTable.name}, you have paid KES ${paymentAmount}. Remaining balance: KES ${newFee.totalFees - newFee.feesPaid}.`;
+                await sendSmsNotification(phoneNumber, message);
 
                 return res.status(201).json({
                     message: "New fee record created successfully.",
@@ -125,6 +164,9 @@ const queryPaymentStatus = async (req, res) => {
                 student.paymentDate = new Date();
 
                 const updatedFee = await student.save();
+
+                const message = `Hello ${student.name}, admission: ${student.admissionNumber}, you have paid KES ${paymentAmount}. Remaining balance: KES ${updatedFee.totalFees - updatedFee.feesPaid}.`;
+                await sendSmsNotification(phoneNumber, message);
 
                 return res.status(200).json({
                     message: "Payment successful.",

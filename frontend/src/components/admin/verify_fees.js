@@ -75,8 +75,9 @@ export default function VerifyFees() {
                 try {
                     const queryResponse = await axios.post("http://localhost:4000/api/verify-fees/query-status", {
                         checkoutRequestID: CheckoutRequestID,
-                        admissionNumber, // Pass admissionNumber again here
-                        paymentAmount
+                        admissionNumber,
+                        paymentAmount,
+                        phoneNumber
                     });
 
                     console.log("Query Payment Response:", queryResponse.data);
