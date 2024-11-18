@@ -5,7 +5,7 @@ import './css_files/verify_fees.css';
 export default function VerifyFees() {
     const [admissionNumber, setAdmissionNumber] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [paymentAmount, setPaymentAmount] = useState(""); // Add state for payment amount
+    const [paymentAmount, setPaymentAmount] = useState("");
     const [feeStatus, setFeeStatus] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -32,8 +32,9 @@ export default function VerifyFees() {
 
     const fetchStudentOptions = async () => {
         try {
-            const response = await axios.get("http://localhost:4000/api/student");
+            const response = await axios.get("http://localhost:4000/api/student/student");
             setStudentOptions(response.data);
+            console.log(response.data);
         } catch (err) {
             console.error("Error fetching student options:", err);
         }
@@ -47,11 +48,14 @@ export default function VerifyFees() {
         try {
             alert("Initiating fee verification process. Please wait...");
 
+            // Send admissionNumber in the payload
             const initiateResponse = await axios.post("http://localhost:4000/api/verify-fees/initiate-payment", {
-                admissionNumber,
+                admissionNumber, 
                 phoneNumber,
-                paymentAmount, // Include payment amount
+                paymentAmount
             });
+
+            console.log("Initiate Payment Response:", initiateResponse.data);
 
             const { CheckoutRequestID } = initiateResponse.data;
 
@@ -59,9 +63,11 @@ export default function VerifyFees() {
                 try {
                     const queryResponse = await axios.post("http://localhost:4000/api/verify-fees/query-status", {
                         checkoutRequestID: CheckoutRequestID,
-                        studentId: admissionNumber,
-                        paymentAmount, // Include payment amount in the query
+                        admissionNumber, // Pass admissionNumber again here
+                        paymentAmount
                     });
+
+                    console.log("Query Payment Response:", queryResponse.data);
 
                     if (queryResponse.status === 200) {
                         setFeeStatus(queryResponse.data);
@@ -72,31 +78,32 @@ export default function VerifyFees() {
                         setError("Failed to verify fee payment status.");
                     }
                 } catch (queryError) {
+                    console.error("Error querying payment status:", queryError);
                     alert("An error occurred while querying payment status.");
                     setError("An error occurred while querying payment status.");
-                    console.error(queryError);
                 }
             }, 10000); // 10-second delay before querying status
         } catch (err) {
+            console.error("Error initiating payment:", err);
             alert("An error occurred while initiating payment.");
             setError("An error occurred while initiating payment.");
-            console.error(err);
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="content">
             <h1>Verify Student Fees</h1>
             <div className="verify-form">
                 <select
-                    value={admissionNumber}
-                    onChange={(e) => setAdmissionNumber(e.target.value)}
+                    value={admissionNumber} // Admission number state
+                    onChange={(e) => setAdmissionNumber(e.target.value)} // Update admissionNumber
                 >
                     <option value="">Select Student</option>
                     {studentOptions.map((student) => (
-                        <option key={student._id} value={student.admissionNumber}>
+                        <option key={student._Id} value={student.admissionNumber}>
                             {student.admissionNumber} - {student.name}
                         </option>
                     ))}
@@ -113,7 +120,7 @@ export default function VerifyFees() {
                     type="number"
                     placeholder="Enter Payment Amount"
                     value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(Number(e.target.value))} // Parse the amount to a number
+                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
                 />
 
                 <button onClick={handleVerifyFees} disabled={loading || !admissionNumber || !phoneNumber || !paymentAmount}>
@@ -143,11 +150,11 @@ export default function VerifyFees() {
                         {students
                             .filter((student) =>
                                 (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                (student.studentId && student.studentId.toLowerCase().includes(searchTerm.toLowerCase()))
+                                (student.admissionNumber && student.admissionNumber.toLowerCase().includes(searchTerm.toLowerCase()))
                             )
                             .map((student) => (
-                                <tr key={student.studentId}>
-                                    <td>{student.studentId}</td>
+                                <tr key={student.admissionNumber}>
+                                    <td>{student.admissionNumber}</td>
                                     <td>{student.name}</td>
                                     <td>{student.totalFees}</td>
                                     <td>{student.feesPaid}</td>

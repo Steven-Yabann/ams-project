@@ -14,7 +14,7 @@ router.post("/initiate-payment", initiatePayment);
 
 router.post("/query-status", queryPaymentStatus);
 
-router.post("/update-status", updateFeeStatusInDb);
+// router.post("/update-status", updateFeeStatusInDb);
 
 router.get('/paid-students', getPaidStudents);
 

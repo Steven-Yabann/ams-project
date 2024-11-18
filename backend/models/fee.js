@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
+const { getAdmissionNumbers } = require("../controllers/teachersController");
 
 const feeSchema = new mongoose.Schema({
-    studentId: { type: String, required: true },
+    admissionNumber: { type: String, required: true },
     name: { type: String, required: true },
     totalFees: { type: Number, default: 10000 },
     feesPaid: { type: Number, default: 0 },
