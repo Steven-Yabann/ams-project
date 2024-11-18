@@ -3,7 +3,7 @@ import axios from "axios";
 import './marks.css';
 
 const Marks = () => {
-  const [marksData, setMarksData] = useState([]); // Initialize marksData as an empty array
+  const [marksData, setMarksData] = useState([]);
   const [admissionNumbers, setAdmissionNumbers] = useState([]);
   const [formData, setFormData] = useState({
     studentId: "",
@@ -15,30 +15,21 @@ const Marks = () => {
   const subjects = ["Math", "Chemistry", "English", "Physics", "Biology", "History"];
   const typeofTests = ["Exam", "Quiz", "Assignment", "Project"];
 
-  // Fetch admission numbers and marks data from the backend
   useEffect(() => {
     fetchAdmissionNumbers();
     fetchMarksData();
-  }, []); // Empty array to run this only on initial mount
+  }, []);
 
   const fetchAdmissionNumbers = () => {
     axios.get("http://localhost:4000/api/teacher/admission-numbers")
-      .then((response) => {
-        setAdmissionNumbers(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching admission numbers:", error);
-      });
+      .then((response) => setAdmissionNumbers(response.data))
+      .catch((error) => console.error("Error fetching admission numbers:", error));
   };
 
   const fetchMarksData = () => {
     axios.get("http://localhost:4000/api/teacher/marks")
-      .then((response) => {
-        setMarksData(response.data); // Set fetched marks data
-      })
-      .catch((error) => {
-        console.error("Error fetching marks data:", error);
-      });
+      .then((response) => setMarksData(response.data))
+      .catch((error) => console.error("Error fetching marks data:", error));
   };
 
   const handleInputChange = (e) => {
@@ -49,43 +40,38 @@ const Marks = () => {
     const newData = { 
       ...formData, 
       marks: Number(formData.marks),
-      grade: calculateGrade(Number(formData.marks)), // Calculate grade
-      GPA: calculateGPA(Number(formData.marks)),    // Calculate GPA based on the marks
+      grade: calculateGrade(Number(formData.marks)),
+      GPA: calculateGPA(),
     };
-  
-    const existingIndex = marksData.findIndex((data) => data.studentId === Number(formData.studentId));
-  
+
+    const existingIndex = marksData.findIndex((data) => data.studentId === formData.studentId);
+
     if (existingIndex !== -1) {
-      // If data exists, send a PUT request to update
       axios.put(`http://localhost:4000/api/teacher/marks/${formData.studentId}`, newData)
-        .then((response) => {
-          fetchMarksData(); // Fetch updated marks data after update
-        })
-        .catch((error) => {
-          console.error("Error updating marks:", error);
-        });
+        .then(fetchMarksData)
+        .catch((error) => console.error("Error updating marks:", error));
     } else {
-      // If data doesn't exist, send a POST request to add new data
       axios.post("http://localhost:4000/api/teacher/marks", newData)
-        .then((response) => {
-          fetchMarksData(); // Fetch updated marks data after adding
-        })
-        .catch((error) => {
-          console.error("Error adding marks:", error);
-        });
+        .then(fetchMarksData)
+        .catch((error) => console.error("Error adding marks:", error));
     }
-  
-    // Reset form data after adding or updating
+
     setFormData({ studentId: "", subject: "", marks: "", typeofTest: "" });
   };
-  
 
   const handleEdit = (data) => {
-    setFormData(data);
+    setFormData({
+      studentId: data.studentId,
+      subject: data.subject,
+      marks: data.marks,
+      typeofTest: data.typeofTest,
+    });
   };
 
   const handleDelete = (id) => {
-    setMarksData(marksData.filter((data) => data.id !== id));
+    axios.delete(`http://localhost:4000/api/teacher/marks/${id}`)
+      .then(() => setMarksData(marksData.filter((data) => data._id !== id)))
+      .catch((error) => console.error("Error deleting marks:", error));
   };
 
   const calculateGrade = (marks) => {
@@ -120,7 +106,6 @@ const Marks = () => {
         <p>GPA: {calculateGPA()}</p>
       </header>
       <div className="form-section">
-        {/* Admission Number Dropdown */}
         <select
           name="studentId"
           value={formData.studentId}
@@ -135,7 +120,6 @@ const Marks = () => {
           ))}
         </select>
 
-        {/* Subject Dropdown */}
         <select
           name="subject"
           value={formData.subject}
@@ -150,7 +134,6 @@ const Marks = () => {
           ))}
         </select>
 
-        {/* Marks Input */}
         <input
           type="number"
           placeholder="Marks"
@@ -159,7 +142,6 @@ const Marks = () => {
           onChange={handleInputChange}
         />
 
-        {/* Assessment Type Dropdown */}
         <select
           name="typeofTest"
           value={formData.typeofTest}
@@ -177,7 +159,6 @@ const Marks = () => {
         <button onClick={handleAddUpdate}>Add/Update Marks</button>
       </div>
 
-      {/* Marks Table */}
       <table>
         <thead>
           <tr>
@@ -199,7 +180,7 @@ const Marks = () => {
               <td>{data.typeofTest}</td>
               <td>
                 <button onClick={() => handleEdit(data)}>Edit</button>
-                <button onClick={() => handleDelete(data.id)}>Delete</button>
+                <button onClick={() => handleDelete(data._id)}>Delete</button>
               </td>
             </tr>
           ))}
