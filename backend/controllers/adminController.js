@@ -291,7 +291,7 @@ const getGenderDistribution = async (req, res) => {
                 },
             },
         ]);
-
+        console.log(genderData);
         res.status(200).json(genderData);
     } catch (error) {
         console.error("Error fetching gender distribution:", error);
@@ -299,5 +299,34 @@ const getGenderDistribution = async (req, res) => {
     }
 };
 
+const updateStudentGender = async (req, res) => {
+    const { admissionNumber, gender } = req.body;
 
-module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData, getGenderDistribution };
+    if (!admissionNumber || !gender) {
+        return res.status(400).json({ message: 'Admission number and gender are required' });
+    }
+
+    if (!['Male', 'Female'].includes(gender)) {
+        return res.status(400).json({ message: 'Gender must be either Male or Female' });
+    }
+
+    try {
+        const student = await Student.findOneAndUpdate(
+            { admissionNumber },
+            { gender },
+            { new: true }
+        );
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        res.status(200).json({ message: 'Student gender updated successfully', student });
+    } catch (error) {
+        console.error('Error updating student gender:', error);
+        res.status(500).json({ message: 'Error updating student gender' });
+    }
+};
+
+
+module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData, getGenderDistribution, updateStudentGender };
