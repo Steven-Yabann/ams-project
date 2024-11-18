@@ -1,33 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Attendance = ({ studentId }) => {
+const StudentAttendance = ({ studentId }) => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch attendance records for the student
     const fetchAttendance = async () => {
       try {
-        const response = await axios.get(`/api/attendance/${studentId}`);
+        const response = await axios.get(`/api/attendance/student/${studentId}`);
         setAttendanceRecords(response.data);
       } catch (err) {
-        setError('Failed to load attendance records.');
+        setError(err.response?.data?.message || 'Failed to fetch attendance records');
       }
     };
 
-    fetchAttendance();
+    if (studentId) {
+      fetchAttendance();
+    }
   }, [studentId]);
-
-  if (error) return <div>{error}</div>;
 
   return (
     <div>
-      <h3>Attendance Records</h3>
+      <h2>Attendance Records</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {!attendanceRecords.length && !error && <p>No attendance records found.</p>}
       <ul>
         {attendanceRecords.map((record) => (
           <li key={record._id}>
-            Date: {new Date(record.date).toLocaleDateString()} - {record.present ? 'Present' : 'Absent'}
+            Date: {new Date(record.date).toLocaleDateString()} - Present: {record.present ? 'Yes' : 'No'}
           </li>
         ))}
       </ul>
@@ -35,4 +36,4 @@ const Attendance = ({ studentId }) => {
   );
 };
 
-export default Attendance;
+export default StudentAttendance;
