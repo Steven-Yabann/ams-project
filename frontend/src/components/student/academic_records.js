@@ -319,7 +319,7 @@ const StudentMarks = () => {
                                                   <Tooltip content={<CustomTooltip />} />
                                                   <Legend />
                                                   {getSubjectsForChart().map((subject, index) => (
-                                                      <Line key={subject} type="linear" dataKey={subject} stroke={COLORS[index % COLORS.length]} name={subject} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                                      <Line key={subject} type="monotone" dataKey={subject} stroke={COLORS[index % COLORS.length]} name={subject} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                                                   ))}
                                               </LineChart>
                                           ) : activeChart === 'bar' ? (
