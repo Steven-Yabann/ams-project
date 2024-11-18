@@ -1,7 +1,5 @@
 const Profile = require('../models/profileModel');
 const Student = require('../models/studentModel');
-const fs = require('fs').promises;
-const path = require('path');
 
 const getProfile = async (req, res) => {
     try {
@@ -25,18 +23,32 @@ const getProfile = async (req, res) => {
                 name: student.name,
                 email: student.student_email,
                 admissionNumber: student.admissionNumber,
+                phone: '',
+                homeAddress: '',
+                dob: '',
+                nationality: '',
+                gender: '',
                 profilePicture: '',
-                bio: '',
-                phoneNumber: '',
-                address: '',
-                socialLinks: {
-                    facebook: '',
-                    twitter: '',
-                    linkedin: '',
-                    instagram: ''
-                },
-                interests: [],
-                skills: []
+                class: '',
+                classTeacher: '',
+                yearOfStudy: '',
+                yearOfAdmission: '',
+                gpa: '',
+                graduation: '',
+                religion: '',
+                languages: [],
+                city: '',
+                country: '',
+                guardianInfo: [{
+                    parentName: '',
+                    relationship: '',
+                    contactNumber: '',
+                    email: '',
+                    occupation: '',
+                    address: '',
+                    emergencyContact: '',
+                    alternativeContact: ''
+                }]
             };
             return res.status(200).json(emptyProfile);
         }
@@ -50,6 +62,7 @@ const getProfile = async (req, res) => {
 
         res.status(200).json(profileData);
     } catch (error) {
+        console.error('Profile fetch error:', error);
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
@@ -65,20 +78,48 @@ const updateProfile = async (req, res) => {
             return res.status(404).json({ message: "Student not found" });
         }
 
-        // Remove read-only fields from updates
+        // Remove read-only fields
         delete updates.name;
         delete updates.email;
         delete updates.admissionNumber;
 
+        // Data preprocessing
+        const processedUpdates = { ...updates };
+
+        // Handle date format for DOB if it exists
+        if (updates.dob) {
+            processedUpdates.dob = new Date(updates.dob);
+        }
+
+        // Handle languages array
+        if (updates.languages) {
+            if (typeof updates.languages === 'string') {
+                processedUpdates.languages = updates.languages.split(',').map(lang => lang.trim());
+            } else if (Array.isArray(updates.languages)) {
+                processedUpdates.languages = updates.languages.map(lang => lang.trim());
+            }
+        }
+
+        // Handle guardian info
+        if (updates.guardianInfo) {
+            if (!Array.isArray(updates.guardianInfo)) {
+                processedUpdates.guardianInfo = [updates.guardianInfo];
+            }
+        }
+
+        // Ensure student ID is properly set
+        processedUpdates.admissionNumber = student._id;
+
         const profile = await Profile.findOneAndUpdate(
             { admissionNumber: student._id },
-            { $set: updates },
-            { new: true, runValidators: true, upsert: true } // Added upsert: true to create if doesn't exist
+            { $set: processedUpdates },
+            { 
+                new: true, 
+                runValidators: true, 
+                upsert: true,
+                setDefaultsOnInsert: true 
+            }
         );
-
-        if (!profile) {
-            return res.status(404).json({ message: "Profile not found" });
-        }
 
         const updatedProfileData = {
             ...profile.toObject(),
@@ -87,21 +128,39 @@ const updateProfile = async (req, res) => {
             admissionNumber: student.admissionNumber
         };
 
-        res.status(200).json({ message: "Profile updated successfully", profile: updatedProfileData });
+        res.status(200).json({ 
+            message: "Profile updated successfully", 
+            profile: updatedProfileData 
+        });
+
     } catch (error) {
+        console.error('Profile update error:', error);
+        
         if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: "Validation error", error: error.errors });
+            const validationErrors = Object.keys(error.errors).reduce((acc, key) => {
+                acc[key] = error.errors[key].message;
+                return acc;
+            }, {});
+            
+            return res.status(400).json({ 
+                message: "Validation error", 
+                errors: validationErrors 
+            });
         }
-        res.status(500).json({ message: "Internal server error", error: error.message });
+
+        res.status(500).json({ 
+            message: "Internal server error", 
+            error: error.message 
+        });
     }
 };
 
 const updateProfilePicture = async (req, res) => {
     try {
         const { admissionNumber } = req.params;
-        const { profilePictureUrl } = req.body;
+        const { profilePicture } = req.body;
 
-        if (!profilePictureUrl) {
+        if (!profilePicture) {
             return res.status(400).json({ message: "Profile picture URL is required" });
         }
 
@@ -113,8 +172,12 @@ const updateProfilePicture = async (req, res) => {
 
         const profile = await Profile.findOneAndUpdate(
             { admissionNumber: student._id },
-            { $set: { profilePicture: profilePictureUrl } },
-            { new: true, upsert: true } // Added upsert: true to create if doesn't exist
+            { $set: { profilePicture } },
+            { 
+                new: true, 
+                runValidators: true, 
+                upsert: true 
+            }
         );
 
         const updatedProfileData = {
@@ -124,9 +187,16 @@ const updateProfilePicture = async (req, res) => {
             admissionNumber: student.admissionNumber
         };
 
-        res.status(200).json({ message: "Profile picture updated successfully", profile: updatedProfileData });
+        res.status(200).json({ 
+            message: "Profile picture updated successfully", 
+            profile: updatedProfileData 
+        });
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error('Profile picture update error:', error);
+        res.status(500).json({ 
+            message: "Internal server error", 
+            error: error.message 
+        });
     }
 };
 
