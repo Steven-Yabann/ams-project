@@ -4,11 +4,13 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const adminRoutes = require('./routes/admin');
 const libraryRoutes = require('./routes/book');
-const studentRoutes = require('./routes/student');
+const academicRoutes = require('./routes/academicRoutes');
 const teacherRoutes = require('./routes/teacher');
 const calendarRoutes = require('./routes/calendar');
 const feeRoutes = require('./routes/feeRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const borrowedBookRoutes = require( './routes/borrowedBookRoutes');
 
 const authRoutes = require('./routes/auth');
 
@@ -31,10 +33,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/verify-fees', feeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/books', libraryRoutes);
-app.use('/api/student', studentRoutes);
+app.use('/api/academic', academicRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/borrowedBooks', borrowedBookRoutes);
+
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
 });
