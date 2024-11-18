@@ -9,6 +9,7 @@ const UpdateBookStatus = () => {
     const [students, setStudents] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [studentSearchTerm, setStudentSearchTerm] = useState('');
+    const [filteredStudents, setFilteredStudents] = useState([]);
     const [studentInfo, setStudentInfo] = useState({
         studentNumber: '',
         borrowDate: '',
@@ -58,11 +59,16 @@ const UpdateBookStatus = () => {
     };
 
     // Handle student search input
-    const handleStudentSearch = async (e) => {
+    const handleStudentSearch = (e) => {
         const searchValue = e.target.value;
         setStudentSearchTerm(searchValue);
-        await fetchFilteredStudents(searchValue);
-    };
+    
+        // Filter students based on admission number
+        const filtered = students.filter(student =>
+            student.admissionNumber.toLowerCase().includes(searchValue.toLowerCase())
+        );
+        setFilteredStudents(filtered);
+    };    
 
     const handleInputChange = (e) => {
         setStudentInfo({
@@ -124,30 +130,29 @@ const UpdateBookStatus = () => {
             {/* Student search and dropdown */}
             <div className='flex-inputs'>
                 <label>
-                    Admission Number
+                    Search Admission Number
                     <input
                         type="text"
-                        name="studentNumber"
-                        placeholder="Search Student Number"
+                        placeholder="Search Student by Admission Number"
                         value={studentSearchTerm}
                         onChange={handleStudentSearch}
                         className="input-field"
                     />
-                </label>
+                            </label>
                 <select
                     className="select-input"
                     onChange={(e) => {
-                        const selectedStudent = students.find(student => student._id === e.target.value);
+                        const selectedStudent = filteredStudents.find(student => student._id === e.target.value);
                         if (selectedStudent) {
                             setStudentInfo({
                                 ...studentInfo,
-                                studentNumber: selectedStudent.studentNumber
+                                studentNumber: selectedStudent.admissionNumber,
                             });
                         }
                     }}
                 >
                     <option value="">Select Student</option>
-                    {students.map((student) => (
+                    {filteredStudents.map((student) => (
                         <option key={student._id} value={student._id}>
                             {`${student.admissionNumber} - ${student.name}`}
                         </option>
