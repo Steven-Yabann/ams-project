@@ -8,7 +8,8 @@ const
     getStudents,
     dashboardStats,
     getMarksData,
-    getGenderDistribution,
+    getGenderDistributionStudent,
+    getGenderDistributionTeacher,
     updateStudentGender
 }   = require('../controllers/adminController');
 
@@ -25,7 +26,9 @@ router.get('/dashboard-stats', dashboardStats);
 
 router.get('/marks', getMarksData);
 
-router.get('/students/gender-distribution', getGenderDistribution);
+router.get('/students/gender-distribution', getGenderDistributionStudent);
+
+router.get('/teachers/gender-distribution', getGenderDistributionTeacher);
 
 router.put('/students/update-gender', updateStudentGender);
 

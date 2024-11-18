@@ -24,6 +24,8 @@ export default function AdminDashboard() {
     const [loadingMarks, setLoadingMarks] = useState(true);
     const [genderData, setGenderData] = useState([]);
     const [loadingGenderData, setLoadingGenderData] = useState(true);
+    const [teacherGenderData, setTeacherGenderData] = useState([]);
+    const [loadingTeacherGenderData, setLoadingTeacherGenderData] = useState(true);
     const [loadingTeachers, setLoadingTeachers] = useState(true);
     const [loadingStudents, setLoadingStudents] = useState(true);
     const [stats, setStats] = useState({
@@ -40,6 +42,7 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [chartType, setChartType] = useState('donut');
     const COLORS = ['#8884d8', '#82ca9d'];
+    const TEACHER_GENDER_COLORS = ['#FF6F61', '#6B8E23'];
 
     const fetchStats = async () => {
         try {
@@ -88,7 +91,7 @@ export default function AdminDashboard() {
             });
     }
 
-    const fetchGenderDistribution = async () => {
+    const fetchGenderDistributionStudent = async () => {
         axios.get('http://localhost:4000/api/admin/students/gender-distribution')
             .then((response) => {
                 setGenderData(response.data);
@@ -97,6 +100,18 @@ export default function AdminDashboard() {
             .catch((error) => {
                 console.error("Error fetching gender distribution:", error);
                 setLoadingGenderData(false);
+            });
+    }
+
+    const fetchGenderDistributionTeacher = async () => {
+        axios.get('http://localhost:4000/api/admin/teachers/gender-distribution')
+            .then((response) => {
+                setTeacherGenderData(response.data);
+                setLoadingTeacherGenderData(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching teacher gender distribution:", error);
+                setLoadingTeacherGenderData(false);
             });
     }
 
@@ -118,7 +133,8 @@ export default function AdminDashboard() {
         fetchTeachers();
         fetchStudents();
         fetchMarks();
-        fetchGenderDistribution()
+        fetchGenderDistributionStudent();
+        fetchGenderDistributionTeacher();
     }, []);
 
     if (loading) {
@@ -130,6 +146,10 @@ export default function AdminDashboard() {
         { name: 'Unpaid Fees', value: stats.feeStats.totalUnpaidFees },
     ];
 
+    const transformedTeacherGenderData = teacherGenderData.map((item) => ({
+        name: item._id,
+        value: item.count,
+    }));
 
     const combinedAdmissions = [];
     const studentData = stats.studentAdmissions.map((entry) => ({
@@ -191,7 +211,7 @@ export default function AdminDashboard() {
 
             <div className="charts-row">
                 <div className="chart-container line-chart">
-                    <h2>Admissions Over Time (Line Graph)</h2>
+                    <h2>Admissions Over Time</h2>
                     <ResponsiveContainer width="100%" height={400}>
                         <LineChart data={combinedAdmissions}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -199,79 +219,110 @@ export default function AdminDashboard() {
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Line type="monotone" dataKey="students" stroke="#4CAF50" name="Students" />
+                            <Line type="monotone" dataKey="students" stroke="#5743E" name="Students" />
                             <Line type="monotone" dataKey="teachers" stroke="#FF7043" name="Teachers" />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
 
-                <div className="charts-row">
-                    <div className="chart-container">
-                        <h2>Fee Data ({chartType === 'donut' ? 'Donut Chart' : 'Bar Chart'})</h2>
-                        <ResponsiveContainer width="100%" height={400}>
-                            {chartType === 'donut' ? (
-                                <PieChart>
-                                    <Pie
-                                        data={feeData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius="40%"
-                                        outerRadius="70%"
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {feeData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={index === 0 ? '#4CAF50' : '#FF7043'} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                    <Legend />
-                                </PieChart>
-                            ) : (
-                                <BarChart data={feeData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Bar dataKey="value" fill="#82ca9d" />
-                                </BarChart>
-                            )}
-                        </ResponsiveContainer>
-                    </div>
+
+                <div className="chart-container">
+                    <h2>Fee Data ({chartType === 'donut' ? 'Donut Chart' : 'Bar Chart'})</h2>
+                    <ResponsiveContainer width="100%" height={400}>
+                        {chartType === 'donut' ? (
+                            <PieChart>
+                                <Pie
+                                    data={feeData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius="40%"
+                                    outerRadius="70%"
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {feeData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={index === 0 ? '#4CAF50' : '#FF7043'} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        ) : (
+                            <BarChart data={feeData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="value" fill="#82ca9d" />
+                            </BarChart>
+                        )}
+                    </ResponsiveContainer>
                 </div>
             </div>
 
-            <div className="chart-container">
-                <h2>Gender Distribution</h2>
-                {loadingGenderData ? (
-                    <p>Loading gender data...</p>
-                ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie
-                                data={transformedGenderData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius="40%"
-                                outerRadius="70%"
-                                paddingAngle={5}
-                                dataKey="value"
-                                nameKey="name"
-                            >
-                                {transformedGenderData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                )}
+            <div className="gender-charts-row">
+                <div className="gender-chart-container">
+                    <h2>Student Gender Distribution</h2>
+                    {loadingGenderData ? (
+                        <p>Loading gender data...</p>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={transformedGenderData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius="40%"
+                                    outerRadius="70%"
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    nameKey="name"
+                                >
+                                    {transformedGenderData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+
+                <div className="gender-chart-container">
+                    <h2>Teacher Gender Distribution</h2>
+                    {loadingTeacherGenderData ? (
+                        <p>Loading gender data...</p>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={transformedTeacherGenderData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius="40%"
+                                    outerRadius="70%"
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    nameKey="name"
+                                >
+                                    {transformedTeacherGenderData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={TEACHER_GENDER_COLORS[index % TEACHER_GENDER_COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
             </div>
 
+
+
             <div className="chart-container">
-                <h2>Exam Marks Data (Bar Graph)</h2>
+                <h2>Exam Marks Data</h2>
                 {loadingMarks ? (
                     <p>Loading marks data...</p>
                 ) : (

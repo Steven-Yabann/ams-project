@@ -257,3 +257,27 @@
     color: #333;
 }
 
+.gender-charts-row {
+    display: flex;
+    justify-content: space-between; /* Add spacing between the charts */
+    align-items: flex-start; /* Align charts at the top */
+    gap: 20px; /* Space between the charts */
+    margin-top: 20px; /* Add margin at the top */
+}
+
+.gender-chart-container {
+    flex: 1; /* Equal width for both charts */
+    max-width: 45%; /* Restrict the width of each chart */
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.gender-chart-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+

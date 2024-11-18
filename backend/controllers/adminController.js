@@ -281,7 +281,7 @@ const getMarksData = async (req, res) => {
     }
 };
 
-const getGenderDistribution = async (req, res) => {
+const getGenderDistributionStudent = async (req, res) => {
     try {
         const genderData = await Student.aggregate([
             {
@@ -299,10 +299,28 @@ const getGenderDistribution = async (req, res) => {
     }
 };
 
-const updateStudentGender = async (req, res) => {
-    const { admissionNumber, gender } = req.body;
+const getGenderDistributionTeacher = async (req, res) => {
+    try {
+        const genderData = await Teacher.aggregate([
+            {
+                $group: {
+                    _id: "$gender",
+                    count: { $sum: 1 }, 
+                },
+            },
+        ]);
+        console.log(genderData);
+        res.status(200).json(genderData);
+    } catch (error) {
+        console.error("Error fetching gender distribution:", error);
+        res.status(500).json({ message: "Error fetching gender distribution" });
+    }
+};
 
-    if (!admissionNumber || !gender) {
+const updateStudentGender = async (req, res) => {
+    const {identification_no, gender } = req.body;
+
+    if (!identification_no || !gender) {
         return res.status(400).json({ message: 'Admission number and gender are required' });
     }
 
@@ -311,8 +329,8 @@ const updateStudentGender = async (req, res) => {
     }
 
     try {
-        const student = await Student.findOneAndUpdate(
-            { admissionNumber },
+        const student = await Teacher.findOneAndUpdate(
+            { identification_no },
             { gender },
             { new: true }
         );
@@ -329,4 +347,4 @@ const updateStudentGender = async (req, res) => {
 };
 
 
-module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData, getGenderDistribution, updateStudentGender };
+module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData, getGenderDistributionStudent, updateStudentGender, getGenderDistributionTeacher};
