@@ -12,7 +12,7 @@ router.get('/books', getAllBooks);
 // Route to get a book by ISBN
 router.get('/books/:isbn', getBookByISBN);
 
-router.put('/books/:isbn/update', updateBookStatus);
+router.put('/books/:bookId/update', updateBookStatus);
 
 router.get('/fetch-students', fetchStudents);
 
