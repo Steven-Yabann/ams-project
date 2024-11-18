@@ -95,7 +95,7 @@ export default function VerifyFees() {
                     alert("An error occurred while querying payment status.");
                     setError("An error occurred while querying payment status.");
                 }
-            }, 10000); // 10-second delay before querying status
+            }, 25000); // 10-second delay before querying status
         } catch (err) {
             console.error("Error initiating payment:", err);
             alert("An error occurred while initiating payment.");
