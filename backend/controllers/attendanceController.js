@@ -1,25 +1,19 @@
-// controllers/attendanceController.js
+const Attendance = require('../models/attendanceModel');
 
-const Attendance = require('../models/attendanceModel');  // Import the Attendance model
-
-// Controller to get attendance for a specific student
+// Get attendance records by studentId
 exports.getAttendanceByStudent = async (req, res) => {
+  const { studentId } = req.params;
+
   try {
-    const studentId = req.params.studentId;  // Extract the studentId from the request URL
-    
-    // Query the database for attendance records of the specific student
-    const attendanceRecords = await Attendance.find({ studentId: studentId });
-    
-    // If no attendance records are found, return a 404 response
+    const attendanceRecords = await Attendance.find({ studentId });
+
     if (!attendanceRecords.length) {
       return res.status(404).json({ message: 'No attendance records found for this student.' });
     }
-    
-    // Return the attendance records for the student
+
     res.status(200).json(attendanceRecords);
   } catch (error) {
-    // If there's an error, return a 500 error response
-    res.status(500).json({ message: 'Error retrieving attendance records.', error });
+    console.error('Error retrieving attendance records:', error);
+    res.status(500).json({ error: 'Failed to fetch attendance records' });
   }
 };
-

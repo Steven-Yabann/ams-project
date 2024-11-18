@@ -19,7 +19,11 @@ const getProfile = async (req, res) => {
 
         let profile = await Profile.findOne({ admissionNumber: student._id });
         
+<<<<<<< HEAD
         // If no profile exists, return an empty profile structure
+=======
+        
+>>>>>>> d2c416af6db618d1fd163e7f26511d515ebb84f7
         if (!profile) {
             const emptyProfile = {
                 name: student.name,

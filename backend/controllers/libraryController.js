@@ -83,29 +83,47 @@ const fetchStudents = async (req, res) => {
 
 
 const updateBookStatus = async (req, res) => {
-    const { borrowedBookId } = req.params;
-    const { status, isPaid } = req.body;
+    const { bookId } = req.params;  // Accepting bookId from the request parameters
+    const { status, borrowedBy } = req.body;  // 'borrowedBy' contains student details and borrow information
 
     try {
-        const borrowedBook = await BorrowedBook.findById(borrowedBookId).populate('bookId');
-        if (!borrowedBook) return res.status(404).json({ message: "Borrowed book record not found" });
-
-        // Update status based on provided details
-        borrowedBook.status = status;
-
-        if (status === 'Returned') {
-            borrowedBook.bookId.copiesAvailable += 1; // Increase available copies
-            await borrowedBook.bookId.save();
-        } else if (status === 'Lost') {
-            borrowedBook.paymentStatus = isPaid ? 'Paid' : 'Unpaid';
+        // Step 1: Find the book in the Books collection using the bookId
+        const book = await Book.findById(bookId);
+        if (!book) {
+            return res.status(404).json({ message: "Book not found" });
         }
 
-        await borrowedBook.save();
-        res.status(200).json({ message: "Book status updated", borrowedBook });
+        // Step 2: Check if the book is available for borrowing (i.e., if copiesAvailable > 0)
+        if (book.copiesAvailable < 1) {
+            return res.status(400).json({ message: "No copies available for borrowing" });
+        }
+
+        // Step 3: Change the status of the book to 'Borrowed'
+        book.status = 'Borrowed';
+
+        // Step 4: Decrease the available copies of the book
+        book.copiesAvailable -= 1;
+        await book.save();  // Save the updated book record
+
+        // Step 5: Create a new BorrowedBook record to track who borrowed the book
+        const borrowedBook = new BorrowedBook({
+            bookId,
+            borrowedBy,  // Student details like student number, borrow date, return date, etc.
+            borrowDate: new Date(),
+            returnDate: borrowedBy.returnDate || null,  // Optional return date
+            status: 'Borrowed',  // Set the status to 'Borrowed'
+        });
+
+        await borrowedBook.save();  // Save the new BorrowedBook record
+
+        // Step 6: Respond with a success message
+        res.status(201).json({ message: "Book borrowed successfully", borrowedBook });
+
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error });
     }
 };
+
 
 
 // Borrow a book
