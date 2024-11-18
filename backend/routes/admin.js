@@ -6,7 +6,8 @@ const
     createTeacher, 
     getTeachers, 
     getStudents,
-    dashboardStats
+    dashboardStats,
+    getMarksData
 }   = require('../controllers/adminController');
 
 
@@ -19,5 +20,7 @@ router.post('/teacher', createTeacher);
 router.get('/teachers', getTeachers)
 
 router.get('/dashboard-stats', dashboardStats);
+
+router.get('/marks', getMarksData);
 
 module.exports = router;
