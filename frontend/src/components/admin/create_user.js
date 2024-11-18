@@ -6,6 +6,7 @@ export default function Create_user() {
     const [studentInfo, setStudentInfo] = useState({
         name: '',
         student_email: '',
+        gender: '',
     });
 
     const [employeeInfo, setEmployeeInfo] = useState({
@@ -14,6 +15,7 @@ export default function Create_user() {
         phone_no: '',
         role: '',
         department: '',
+        gender: '',
     });
 
     const [status, setStatus] = useState('');
@@ -41,6 +43,8 @@ export default function Create_user() {
                 const studentData = {
                     name: studentInfo.name,
                     student_email: studentInfo.student_email,
+                    gender: studentInfo.gender,
+
                     admissionNumber: Math.floor(10000 + Math.random() * 90000) // Example admission number
                 };
                 console.log("Submitting Student Data:", studentData);
@@ -55,6 +59,7 @@ export default function Create_user() {
                     phone_no: employeeInfo.phone_no,
                     role: employeeInfo.role,
                     department: employeeInfo.department,
+                    gender: employeeInfo.gender,
                     identification_no: Math.floor(10000 + Math.random() * 90000) // Example identification number
                 };
                 console.log("Submitting Employee Data:", employeeData);
@@ -113,6 +118,21 @@ export default function Create_user() {
                             className="input-field"
                         />
                     </label>
+                    <label>
+                        Gender:
+                        <select
+                            name="gender"
+                            value={studentInfo.gender}
+                            onChange={(e) => handleInput(e, 'Student')}
+                            className="input-field"
+                        >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </label>
+                    <br />
+
                     <br />
                     <p>Note: Admission Number will be generated automatically.</p>
                     <button type="submit" className="submit-btn">Submit Student</button>
@@ -186,6 +206,22 @@ export default function Create_user() {
                         </select>
                     </label>
                     <br />
+
+                    <label>
+                        Gender:
+                        <select
+                            name="gender"
+                            value={employeeInfo.gender}
+                            onChange={(e) => handleInput(e, 'Employee')}
+                            className="input-field"
+                        >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </label>
+                    <br />
+
                     <p>Note: Identification Number will be generated automatically.</p>
                     <button type="submit" className="submit-btn">Submit Employee</button>
                 </form>

@@ -57,7 +57,7 @@ The Team`
 const createStudent = async (req, res) => {
     console.log("Received request body:", req.body);
     try {
-        const { name, admissionNumber, student_email } = req.body;
+        const { name, admissionNumber, student_email, gender } = req.body;
 
         const existingUser = await User.findOne({ admissionNumber });
         const existingStudentEmail = await Student.findOne({ student_email });
@@ -76,12 +76,14 @@ const createStudent = async (req, res) => {
             name,
             admissionNumber,
             student_email,
+            gender,
         });
 
         // Create corresponding user document
         const newUser = new User({
             admissionNumber,
             password,
+            gender,
             userCategory: 'student',
         });
 
@@ -107,7 +109,7 @@ const createStudent = async (req, res) => {
 const createTeacher = async (req, res) => {
     console.log("Received request body:", req.body);
     try {
-        const { name, identification_no, email, phone_no, role, department } = req.body;
+        const { name, identification_no, email, phone_no, role, department,gender } = req.body;
 
         // Generate a random password
         const password = generatePassword();
@@ -120,6 +122,7 @@ const createTeacher = async (req, res) => {
             phone_no,
             role,
             department,
+            gender,
         });
 
         // Create corresponding user document
@@ -127,6 +130,7 @@ const createTeacher = async (req, res) => {
             admissionNumber: identification_no,
             password,
             userCategory: 'teacher',
+            gender,
         });
 
         await newTeacher.save();
