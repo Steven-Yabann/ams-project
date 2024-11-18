@@ -13,26 +13,49 @@ const StudentAttendance = ({ studentId }) => {
       console.log(response.data);
       setAttendanceRecords(response.data);
     } catch (err) {
-      setError(err.response?.data?.message);
+      setError(err.response?.data?.message || 'Failed to fetch attendance records.');
     }
   };
 
   useEffect(() => {
-      fetchAttendance();
+    fetchAttendance();
   }, []);
 
   return (
     <div>
-      <h2>Attendance Records</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!attendanceRecords.length && !error && <p>No attendance records found.</p>}
-      <ul>
-        {attendanceRecords.map((record) => (
-          <li key={record._id}>
-            Date: {new Date(record.date).toLocaleDateString()} - Present: {record.present ? 'Yes' : 'No'}
-          </li>
-        ))}
-      </ul>
+      <h2 style={{ textAlign: 'center', color: '#2c3e50' }}>Attendance Records</h2>
+      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+      {!attendanceRecords.length && !error && <p style={{ textAlign: 'center' }}>No attendance records found.</p>}
+      
+      {attendanceRecords.length > 0 && (
+        <table style={{ width: '80%', margin: '20px auto', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f4f4f4', textAlign: 'left' }}>
+              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Date</th>
+              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Present</th>
+            </tr>
+          </thead>
+          <tbody>
+            {attendanceRecords.map((record, index) => (
+              <tr key={record._id} style={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#fff' }}>
+                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                  {new Date(record.date).toLocaleDateString()}
+                </td>
+                <td
+                  style={{
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    color: record.present ? 'green' : 'red',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {record.present ? 'Yes' : 'No'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };

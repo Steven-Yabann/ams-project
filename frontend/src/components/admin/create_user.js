@@ -45,7 +45,7 @@ export default function Create_user() {
                     student_email: studentInfo.student_email,
                     gender: studentInfo.gender,
 
-                    admissionNumber: Math.floor(10000 + Math.random() * 90000) // Example admission number
+                    admissionNumber: Math.floor(10000 + Math.random() * 90000)
                 };
                 console.log("Submitting Student Data:", studentData);
     
@@ -60,7 +60,7 @@ export default function Create_user() {
                     role: employeeInfo.role,
                     department: employeeInfo.department,
                     gender: employeeInfo.gender,
-                    identification_no: Math.floor(10000 + Math.random() * 90000) // Example identification number
+                    identification_no: Math.floor(10000 + Math.random() * 90000)
                 };
                 console.log("Submitting Employee Data:", employeeData);
     
