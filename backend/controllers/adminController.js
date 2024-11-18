@@ -259,6 +259,9 @@ const getMarksData = async (req, res) => {
     try {
         const marksData = await Marks.aggregate([
             {
+                $match: { typeofTest: "Exam" }, // Filter to include only Exams
+            },
+            {
                 $group: {
                     _id: { typeofTest: "$typeofTest", subject: "$subject" },
                     averageMarks: { $avg: "$marks" },
@@ -267,10 +270,10 @@ const getMarksData = async (req, res) => {
                 },
             },
             {
-                $sort: { "_id.typeofTest": 1, "_id.subject": 1 }, // Sort by test type and subject
+                $sort: { "_id.subject": 1 }, // Sort by subject alphabetically
             },
         ]);
-
+        console.log(marksData);
         res.status(200).json(marksData);
     } catch (error) {
         console.error("Error fetching marks data:", error);
@@ -278,4 +281,23 @@ const getMarksData = async (req, res) => {
     }
 };
 
-module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData };
+const getGenderDistribution = async (req, res) => {
+    try {
+        const genderData = await Student.aggregate([
+            {
+                $group: {
+                    _id: "$gender", // Group by gender
+                    count: { $sum: 1 }, // Count the number of students for each gender
+                },
+            },
+        ]);
+
+        res.status(200).json(genderData);
+    } catch (error) {
+        console.error("Error fetching gender distribution:", error);
+        res.status(500).json({ message: "Error fetching gender distribution" });
+    }
+};
+
+
+module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData, getGenderDistribution };

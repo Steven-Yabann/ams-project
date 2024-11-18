@@ -22,6 +22,8 @@ export default function AdminDashboard() {
     const [students, setStudents] = useState([]);
     const [marks, setMarks] = useState([]);
     const [loadingMarks, setLoadingMarks] = useState(true);
+    const [genderData, setGenderData] = useState([]);
+    const [loadingGenderData, setLoadingGenderData] = useState(true);
     const [loadingTeachers, setLoadingTeachers] = useState(true);
     const [loadingStudents, setLoadingStudents] = useState(true);
     const [stats, setStats] = useState({
@@ -36,7 +38,8 @@ export default function AdminDashboard() {
         },
     });
     const [loading, setLoading] = useState(true);
-    const [chartType, setChartType] = useState('donut'); // State to track chart type
+    const [chartType, setChartType] = useState('donut');
+    const COLORS = ['#8884d8', '#82ca9d'];
 
     const fetchStats = async () => {
         try {
@@ -85,6 +88,23 @@ export default function AdminDashboard() {
             });
     }
 
+    const fetchGenderDistribution = async () => {
+        axios.get('http://localhost:4000/api/admin/students/gender-distribution')
+            .then((response) => {
+                setGenderData(response.data);
+                setLoadingGenderData(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching gender distribution:", error);
+                setLoadingGenderData(false);
+            });
+    }
+
+    const transformedGenderData = genderData.map((item) => ({
+        name: item._id,
+        value: item.count,
+    }));
+
     const transformedData = marks.map((mark) => ({
         typeofTest: mark._id.typeofTest,
         subject: mark._id.subject,
@@ -98,6 +118,7 @@ export default function AdminDashboard() {
         fetchTeachers();
         fetchStudents();
         fetchMarks();
+        fetchGenderDistribution()
     }, []);
 
     if (loading) {
@@ -222,6 +243,34 @@ export default function AdminDashboard() {
             </div>
 
             <div className="chart-container">
+                <h2>Gender Distribution</h2>
+                {loadingGenderData ? (
+                    <p>Loading gender data...</p>
+                ) : (
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Pie
+                                data={transformedGenderData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="40%"
+                                outerRadius="70%"
+                                paddingAngle={5}
+                                dataKey="value"
+                                nameKey="name"
+                            >
+                                {transformedGenderData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
+
+            <div className="chart-container">
                 <h2>Exam Marks Data (Bar Graph)</h2>
                 {loadingMarks ? (
                     <p>Loading marks data...</p>
@@ -301,7 +350,6 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            
         </div>
 
 
