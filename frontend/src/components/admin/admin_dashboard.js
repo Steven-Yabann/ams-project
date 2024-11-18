@@ -1,6 +1,13 @@
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+    Tooltip,
+    Legend,
+    PieChart,
+    Pie,
+    Cell,
+    ResponsiveContainer
+} from 'recharts';
 import './css_files/AdminDashboard.css'; // Import CSS file for styling
 
 export default function AdminDashboard() {
@@ -13,6 +20,11 @@ export default function AdminDashboard() {
     });
     const [loading, setLoading] = useState(true);
 
+    // Generate random color
+    const getRandomColor = () => {
+        return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    };
+
     // Fetch dashboard statistics
     const fetchStats = async () => {
         try {
@@ -20,7 +32,7 @@ export default function AdminDashboard() {
             setStats(data);
             setLoading(false);
         } catch (error) {
-            console.error("Error fetching dashboard stats:", error);
+            console.error('Error fetching dashboard stats:', error);
             setLoading(false);
         }
     };
@@ -33,20 +45,25 @@ export default function AdminDashboard() {
         return <p>Loading dashboard data...</p>;
     }
 
-    // Data for the bar chart
-    const chartData = [
-        { name: 'Students', count: stats.studentsCount },
-        { name: 'Teachers', count: stats.teachersCount },
-        { name: 'Total Users', count: stats.usersCount },
-        { name: 'Books', count: stats.booksCount } // Add books count to chart
+    // Data for charts
+    const userDistributionData = [
+        { name: 'Students', value: stats.studentsCount },
+        { name: 'Teachers', value: stats.teachersCount }
+    ];
+    const donutData = [
+        { name: 'Users', value: stats.usersCount },
+        { name: 'Books', value: stats.booksCount }
     ];
 
     return (
         <div className="admin-dashboard">
+            {/* Header */}
             <header className="dashboard-header">
                 <h1>Admin Dashboard</h1>
+                {/* <button className="logout-button">Logout</button> */}
             </header>
 
+            {/* Stats Section */}
             <div className="stats-container">
                 <div className="stat-box">
                     <h3>Total Students</h3>
@@ -66,42 +83,55 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            <div className="chart-container">
-                <h2>Overview</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" fill="#4CAF50" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
+            {/* Horizontal Charts Section */}
+            <div className="charts-row">
+                {/* Teacher-Student Distribution Chart */}
+                <div className="chart-container">
+                    <h2>Teacher-Student Distribution</h2>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Pie
+                                data={userDistributionData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="40%"
+                                outerRadius="70%"
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {userDistributionData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={getRandomColor()} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
 
-            <div className="recent-users">
-                <h2>Recently Created Users</h2>
-                <table className="user-table">
-                    <thead>
-                        <tr>
-                            <th>User ID</th>
-                            <th>Admission Number</th>
-                            <th>User Category</th>
-                            <th>Creation Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {stats.recentUsers.map(user => (
-                            <tr key={user._id}>
-                                <td>{user._id}</td>
-                                <td>{user.admissionNumber}</td>
-                                <td>{user.userCategory}</td>
-                                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                {/* User and Book Proportions Chart */}
+                <div className="chart-container">
+                    <h2>User and Book Proportions</h2>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Pie
+                                data={donutData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="40%"
+                                outerRadius="70%"
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {donutData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={getRandomColor()} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
         </div>
     );

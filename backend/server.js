@@ -11,6 +11,7 @@ const feeRoutes = require('./routes/feeRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const borrowedBookRoutes = require( './routes/borrowedBookRoutes');
+const studentRoutes = require('./routes/studentRoutes');
 
 const authRoutes = require('./routes/auth');
 
@@ -35,6 +36,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/books', libraryRoutes);
 app.use('/api/academic', academicRoutes);
 app.use('/api/teacher', teacherRoutes);
+app.use('/api/student', studentRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/attendance', attendanceRoutes);

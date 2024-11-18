@@ -4,7 +4,7 @@ const {
 
     initiatePayment, 
     queryPaymentStatus, 
-    updateFeeStatusInDb,
+    getUnpaidStudents,
     getPaidStudents 
 
 } = require('../controllers/feeController');
@@ -14,7 +14,7 @@ router.post("/initiate-payment", initiatePayment);
 
 router.post("/query-status", queryPaymentStatus);
 
-router.post("/update-status", updateFeeStatusInDb);
+router.get("/unpaid-students", getUnpaidStudents);
 
 router.get('/paid-students', getPaidStudents);
 

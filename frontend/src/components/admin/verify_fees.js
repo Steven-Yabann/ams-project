@@ -5,18 +5,21 @@ import './css_files/verify_fees.css';
 export default function VerifyFees() {
     const [admissionNumber, setAdmissionNumber] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [paymentAmount, setPaymentAmount] = useState("");
     const [feeStatus, setFeeStatus] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [students, setStudents] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [studentOptions, setStudentOptions] = useState([]);
+    const [unpaidStudents, setUnpaidStudents] = useState([]);
+
 
     useEffect(() => {
-        // Fetch all students who have paid fees
         fetchPaidStudents();
 
-        // Fetch student options for the dropdown
+        fetchUnpaidStudents();
+
         fetchStudentOptions();
     }, []);
 
@@ -29,27 +32,42 @@ export default function VerifyFees() {
         }
     };
 
+    const fetchUnpaidStudents = async () => {
+        try {
+            const response = await axios.get("http://localhost:4000/api/verify-fees/unpaid-students");
+            setUnpaidStudents(response.data);
+        } catch (err) {
+            console.error("Error fetching unpaid students:", err);
+        }
+    };
+
+
     const fetchStudentOptions = async () => {
         try {
-            const response = await axios.get("http://localhost:4000/api/student");
+            const response = await axios.get("http://localhost:4000/api/student/student");
             setStudentOptions(response.data);
+            console.log(response.data);
         } catch (err) {
             console.error("Error fetching student options:", err);
         }
     };
 
     const handleVerifyFees = async () => {
-        console.log("Submitting:", { studentId: admissionNumber, phoneNumber });
+        console.log("Submitting:", { admissionNumber, phoneNumber, paymentAmount });
         setLoading(true);
         setError("");
 
         try {
             alert("Initiating fee verification process. Please wait...");
 
+            // Send admissionNumber in the payload
             const initiateResponse = await axios.post("http://localhost:4000/api/verify-fees/initiate-payment", {
                 admissionNumber,
-                phoneNumber
+                phoneNumber,
+                paymentAmount
             });
+
+            console.log("Initiate Payment Response:", initiateResponse.data);
 
             const { CheckoutRequestID } = initiateResponse.data;
 
@@ -57,10 +75,13 @@ export default function VerifyFees() {
                 try {
                     const queryResponse = await axios.post("http://localhost:4000/api/verify-fees/query-status", {
                         checkoutRequestID: CheckoutRequestID,
-                        studentId: admissionNumber
+                        admissionNumber, // Pass admissionNumber again here
+                        paymentAmount
                     });
 
-                    if (queryResponse.status === 200) {
+                    console.log("Query Payment Response:", queryResponse.data);
+
+                    if (queryResponse.status === 200 || queryResponse.status === 201) {
                         setFeeStatus(queryResponse.data);
                         fetchPaidStudents(); // Update the table with the latest data
 
@@ -69,31 +90,32 @@ export default function VerifyFees() {
                         setError("Failed to verify fee payment status.");
                     }
                 } catch (queryError) {
+                    console.error("Error querying payment status:", queryError);
                     alert("An error occurred while querying payment status.");
                     setError("An error occurred while querying payment status.");
-                    console.error(queryError);
                 }
             }, 10000); // 10-second delay before querying status
         } catch (err) {
+            console.error("Error initiating payment:", err);
             alert("An error occurred while initiating payment.");
             setError("An error occurred while initiating payment.");
-            console.error(err);
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="content">
             <h1>Verify Student Fees</h1>
             <div className="verify-form">
                 <select
-                    value={admissionNumber}
-                    onChange={(e) => setAdmissionNumber(e.target.value)}
+                    value={admissionNumber} // Admission number state
+                    onChange={(e) => setAdmissionNumber(e.target.value)} // Update admissionNumber
                 >
                     <option value="">Select Student</option>
                     {studentOptions.map((student) => (
-                        <option key={student._id} value={student.admissionNumber}>
+                        <option key={student._Id} value={student.admissionNumber}>
                             {student.admissionNumber} - {student.name}
                         </option>
                     ))}
@@ -105,35 +127,18 @@ export default function VerifyFees() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                 />
-                <button onClick={handleVerifyFees} disabled={loading || !admissionNumber || !phoneNumber}>
+
+                <input
+                    type="number"
+                    placeholder="Enter Payment Amount"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                />
+
+                <button onClick={handleVerifyFees} disabled={loading || !admissionNumber || !phoneNumber || !paymentAmount}>
                     {loading ? "Verifying..." : "Verify Fees"}
                 </button>
             </div>
-            {/* {feeStatus && (
-                <div className="fee-status">
-                    <h2>Fee Details</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Total Fees</th>
-                                <th>Fees Paid</th>
-                                <th>Date of Payment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>{feeStatus.studentId}</td>
-                                <td>{feeStatus.totalFees}</td>
-                                <td>{feeStatus.feesPaid}</td>
-                                <td>{new Date(feeStatus.paymentDate).toLocaleDateString()}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p>Status: {feeStatus.isCleared ? "Cleared" : "Pending"}</p>
-                </div>
-            )}
-            {error && <p className="error">{error}</p>} */}
 
             <div className="student-table">
                 <h2>Students Who Have Paid Fees</h2>
@@ -157,20 +162,51 @@ export default function VerifyFees() {
                         {students
                             .filter((student) =>
                                 (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                (student.studentId && student.studentId.toLowerCase().includes(searchTerm.toLowerCase()))
+                                (student.admissionNumber && student.admissionNumber.toLowerCase().includes(searchTerm.toLowerCase()))
                             )
                             .map((student) => (
-                                <tr key={student.studentId}>
-                                    <td>{student.studentId}</td>
-                                    <td>{student.name}</td> {/* Display the name */}
+                                <tr key={student.admissionNumber}>
+                                    <td>{student.admissionNumber}</td>
+                                    <td>{student.name}</td>
                                     <td>{student.totalFees}</td>
                                     <td>{student.feesPaid}</td>
                                     <td>{new Date(student.paymentDate).toLocaleDateString()}</td>
                                 </tr>
                             ))}
                     </tbody>
-
                 </table>
+                <div className="student-table">
+                    <h2>Students Who Have Not Paid Fees</h2>
+                    {/* <input
+                        type="text"
+                        placeholder="Search by Student ID or Name"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    /> */}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {unpaidStudents
+                                .filter((student) =>
+                                    (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                                    (student.admissionNumber && student.admissionNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+                                )
+                                .map((student) => (
+                                    <tr key={student.admissionNumber}>
+                                        <td>{student.admissionNumber}</td>
+                                        <td>{student.name}</td>
+                                        <td>{student.student_email || "N/A"}</td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
