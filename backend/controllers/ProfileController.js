@@ -20,6 +20,7 @@ const getProfile = async (req, res) => {
 
         let profile = await Profile.findOne({ admissionNumber: student._id });
         
+        
         if (!profile) {
             profile = new Profile({
                 admissionNumber: student._id,

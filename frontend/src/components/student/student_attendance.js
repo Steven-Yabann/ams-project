@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const admissionNumber = sessionStorage.getItem('admissionNumber');
+
 const StudentAttendance = ({ studentId }) => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        const response = await axios.get(`/api/attendance/student/${studentId}`);
-        setAttendanceRecords(response.data);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch attendance records');
-      }
-    };
-
-    if (studentId) {
-      fetchAttendance();
+  const fetchAttendance = async () => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/attendance/student/${admissionNumber}`);
+      console.log(response.data);
+      setAttendanceRecords(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message);
     }
-  }, [studentId]);
+  };
+
+  useEffect(() => {
+      fetchAttendance();
+  }, []);
 
   return (
     <div>
