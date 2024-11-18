@@ -1,4 +1,3 @@
-// 3. controllers/ProfileController.js
 const Profile = require('../models/profileModel');
 const Student = require('../models/studentModel');
 const fs = require('fs').promises;
@@ -20,12 +19,26 @@ const getProfile = async (req, res) => {
 
         let profile = await Profile.findOne({ admissionNumber: student._id });
         
+        // If no profile exists, return an empty profile structure
         if (!profile) {
-            profile = new Profile({
-                admissionNumber: student._id,
-                email: student.student_email
-            });
-            await profile.save();
+            const emptyProfile = {
+                name: student.name,
+                email: student.student_email,
+                admissionNumber: student.admissionNumber,
+                profilePicture: '',
+                bio: '',
+                phoneNumber: '',
+                address: '',
+                socialLinks: {
+                    facebook: '',
+                    twitter: '',
+                    linkedin: '',
+                    instagram: ''
+                },
+                interests: [],
+                skills: []
+            };
+            return res.status(200).json(emptyProfile);
         }
 
         const profileData = {
@@ -60,7 +73,7 @@ const updateProfile = async (req, res) => {
         const profile = await Profile.findOneAndUpdate(
             { admissionNumber: student._id },
             { $set: updates },
-            { new: true, runValidators: true }
+            { new: true, runValidators: true, upsert: true } // Added upsert: true to create if doesn't exist
         );
 
         if (!profile) {
@@ -86,7 +99,7 @@ const updateProfile = async (req, res) => {
 const updateProfilePicture = async (req, res) => {
     try {
         const { admissionNumber } = req.params;
-        const { profilePictureUrl } = req.body; // Accept profile picture URL
+        const { profilePictureUrl } = req.body;
 
         if (!profilePictureUrl) {
             return res.status(400).json({ message: "Profile picture URL is required" });
@@ -98,14 +111,11 @@ const updateProfilePicture = async (req, res) => {
             return res.status(404).json({ message: "Student not found" });
         }
 
-        const profile = await Profile.findOne({ admissionNumber: student._id });
-
-        if (!profile) {
-            return res.status(404).json({ message: "Profile not found" });
-        }
-
-        profile.profilePicture = profilePictureUrl;
-        await profile.save();
+        const profile = await Profile.findOneAndUpdate(
+            { admissionNumber: student._id },
+            { $set: { profilePicture: profilePictureUrl } },
+            { new: true, upsert: true } // Added upsert: true to create if doesn't exist
+        );
 
         const updatedProfileData = {
             ...profile.toObject(),
