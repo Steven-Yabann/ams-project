@@ -12,12 +12,14 @@ export default function VerifyFees() {
     const [students, setStudents] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [studentOptions, setStudentOptions] = useState([]);
+    const [unpaidStudents, setUnpaidStudents] = useState([]);
+
 
     useEffect(() => {
-        // Fetch all students who have paid fees
         fetchPaidStudents();
 
-        // Fetch student options for the dropdown
+        fetchUnpaidStudents();
+
         fetchStudentOptions();
     }, []);
 
@@ -29,6 +31,16 @@ export default function VerifyFees() {
             console.error("Error fetching paid students:", err);
         }
     };
+
+    const fetchUnpaidStudents = async () => {
+        try {
+            const response = await axios.get("http://localhost:4000/api/verify-fees/unpaid-students");
+            setUnpaidStudents(response.data);
+        } catch (err) {
+            console.error("Error fetching unpaid students:", err);
+        }
+    };
+
 
     const fetchStudentOptions = async () => {
         try {
@@ -50,7 +62,7 @@ export default function VerifyFees() {
 
             // Send admissionNumber in the payload
             const initiateResponse = await axios.post("http://localhost:4000/api/verify-fees/initiate-payment", {
-                admissionNumber, 
+                admissionNumber,
                 phoneNumber,
                 paymentAmount
             });
@@ -69,7 +81,7 @@ export default function VerifyFees() {
 
                     console.log("Query Payment Response:", queryResponse.data);
 
-                    if (queryResponse.status === 200) {
+                    if (queryResponse.status === 200 || queryResponse.status === 201) {
                         setFeeStatus(queryResponse.data);
                         fetchPaidStudents(); // Update the table with the latest data
 
@@ -163,6 +175,38 @@ export default function VerifyFees() {
                             ))}
                     </tbody>
                 </table>
+                <div className="student-table">
+                    <h2>Students Who Have Not Paid Fees</h2>
+                    {/* <input
+                        type="text"
+                        placeholder="Search by Student ID or Name"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    /> */}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {unpaidStudents
+                                .filter((student) =>
+                                    (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                                    (student.admissionNumber && student.admissionNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+                                )
+                                .map((student) => (
+                                    <tr key={student.admissionNumber}>
+                                        <td>{student.admissionNumber}</td>
+                                        <td>{student.name}</td>
+                                        <td>{student.student_email || "N/A"}</td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

@@ -141,6 +141,25 @@ const queryPaymentStatus = async (req, res) => {
     }
 };
 
+const getUnpaidStudents = async (req, res) => {
+    try {
+        const allStudents = await Student.find();
+
+        const paidStudents = await Fee.find().select("admissionNumber");
+        const paidAdmissionNumbers = paidStudents.map((student) => student.admissionNumber);
+
+        // Filter students not in Fee collection
+        const unpaidStudents = allStudents.filter(
+            (student) => !paidAdmissionNumbers.includes(student.admissionNumber)
+        );
+
+        res.json(unpaidStudents);
+    } catch (err) {
+        console.error("Error fetching unpaid students:", err);
+        res.status(500).json({ message: "Error fetching unpaid students" });
+    }
+};
+
 
 const getPaidStudents = async (req, res) => {
     try {
@@ -152,4 +171,4 @@ const getPaidStudents = async (req, res) => {
     }
 };
 
-module.exports = { initiatePayment, queryPaymentStatus, getPaidStudents };
+module.exports = { initiatePayment, queryPaymentStatus, getPaidStudents, getUnpaidStudents };

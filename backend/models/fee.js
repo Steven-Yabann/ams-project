@@ -10,4 +10,5 @@ const feeSchema = new mongoose.Schema({
     paymentDate: { type: Date }
 });
 
-module.exports = mongoose.model("Fee", feeSchema);
+const Fee = mongoose.model("Fee", feeSchema);
+module.exports = Fee;
