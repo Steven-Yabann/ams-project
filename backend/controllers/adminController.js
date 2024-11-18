@@ -3,6 +3,7 @@ const Student = require('../models/studentModel');
 const Teacher = require('../models/teacherModel');
 const User = require('../models/userModel');
 const Book = require('../models/bookModel');
+const Fee = require('../models/fee');
 const nodemailer = require('nodemailer');
 
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -109,7 +110,7 @@ const createStudent = async (req, res) => {
 const createTeacher = async (req, res) => {
     console.log("Received request body:", req.body);
     try {
-        const { name, identification_no, email, phone_no, role, department,gender } = req.body;
+        const { name, identification_no, email, phone_no, role, department, gender } = req.body;
 
         // Generate a random password
         const password = generatePassword();
@@ -150,27 +151,103 @@ const createTeacher = async (req, res) => {
     }
 };
 
-const getStudent = async (req, res) => {
-    res.json({ message: "Student response" });
+const getStudents = async (req, res) => {
+    try {
+        const students = await Student.find().select('name admissionNumber student_email gender');
+        res.status(200).json(students);
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        res.status(500).json({ message: "Error fetching students" });
+    }
 };
 
-const getTeacher = async (req, res) => {
-    res.json({ message: "Teacher response" });
+const getTeachers = async (req, res) => {
+    try {
+        const teachers = await Teacher.find().select('name email phone_no role department gender');
+        res.status(200).json(teachers);
+    } catch (error) {
+        console.error("Error fetching teachers:", error);
+        res.status(500).json({ message: "Error fetching teachers" });
+    }
 };
 
- const dashboardStats = async (req, res) => {
+const dashboardStats = async (req, res) => {
     try {
         const studentsCount = await Student.countDocuments();
         const teachersCount = await Teacher.countDocuments();
         const usersCount = await User.countDocuments();
-        const booksCount = await Book.countDocuments(); // Count the number of books
+
+        const booksTotal = await Book.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalBooks: { $sum: "$totalCopies" },
+                },
+            },
+        ]);
+
+        const totalBooks = booksTotal[0]?.totalBooks || 0; // Fallback to 0 if no books
 
         const recentUsers = await User.find()
             .sort({ createdAt: -1 })
             .limit(10)
             .select('admissionNumber userCategory createdAt');
 
-        res.json({ studentsCount, teachersCount, usersCount, booksCount, recentUsers });
+        const totalFees = await Fee.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalFeesCollected: { $sum: "$feesPaid" },
+                    totalFeesExpected: { $sum: "$totalFees" },
+                },
+            },
+        ]);
+
+        const totalFeesCollected = totalFees[0]?.totalFeesCollected || 0;
+        const totalFeesExpected = totalFees[0]?.totalFeesExpected || 0;
+        const totalUnpaidFees = totalFeesExpected - totalFeesCollected; // Calculate unpaid fees
+
+        const feeStats = {
+            totalFeesCollected,
+            totalUnpaidFees,
+        };
+
+        const paidCount = await Fee.countDocuments({ isCleared: true });
+        const unpaidCount = await Fee.countDocuments({ isCleared: false });
+
+
+        // Group student admissions by date
+        const studentAdmissions = await Student.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        // Group teacher admissions by date
+        const teacherAdmissions = await Teacher.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        res.json({
+            studentsCount,
+            teachersCount,
+            usersCount,
+            booksCount: totalBooks,
+            recentUsers,
+            feeStats,
+            studentAdmissions,
+            teacherAdmissions,
+        });
     } catch (error) {
         console.error("Error fetching dashboard stats:", error);
         res.status(500).json({ message: "Error fetching dashboard statistics" });
@@ -178,11 +255,4 @@ const getTeacher = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-module.exports = { createStudent, createTeacher, getStudent, getTeacher, dashboardStats };
+module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats };
