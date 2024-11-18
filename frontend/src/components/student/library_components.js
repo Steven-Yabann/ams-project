@@ -1,27 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const admissionNumber = sessionStorage.getItem('admissionNumber');
+
 const BorrowedBooks = ({ studentId }) => {
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const fetchBorrowedBooks = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:4000/api/borrowedBooks/borrowed-books/${admissionNumber}`);
+      setBorrowedBooks(response.data);
+    } catch (err) {
+      setError('Failed to fetch borrowed books. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    // Fetch borrowed books for the student
-    const fetchBorrowedBooks = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`/borrowed-books/${studentId}`);
-        setBorrowedBooks(response.data);
-      } catch (err) {
-        setError('Failed to fetch borrowed books. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBorrowedBooks();
-  }, [studentId]);
+  }, []);
 
   if (loading) return <div>Loading borrowed books...</div>;
   if (error) return <div>{error}</div>;
@@ -67,5 +67,6 @@ const BorrowedBooks = ({ studentId }) => {
     </div>
   );
 };
+
 
 export default BorrowedBooks;
