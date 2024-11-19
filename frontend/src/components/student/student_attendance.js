@@ -219,7 +219,7 @@ const StudentAttendance = ({ studentId }) => {
             <Col md={3}>
               <Card className="text-center bg-light">
                 <Card.Body>
-                  <h6>Total Days</h6>
+                  <h6>Total Classes</h6>
                   <h3>{stats.total}</h3>
                 </Card.Body>
               </Card>
@@ -227,7 +227,7 @@ const StudentAttendance = ({ studentId }) => {
             <Col md={3}>
               <Card className="text-center bg-success text-white">
                 <Card.Body>
-                  <h6>Present Days</h6>
+                  <h6>Present Classes</h6>
                   <h3>{stats.present}</h3>
                 </Card.Body>
               </Card>
@@ -235,7 +235,7 @@ const StudentAttendance = ({ studentId }) => {
             <Col md={3}>
               <Card className="text-center bg-danger text-white">
                 <Card.Body>
-                  <h6>Absent Days</h6>
+                  <h6>Absent Classes</h6>
                   <h3>{stats.absent}</h3>
                 </Card.Body>
               </Card>
