@@ -185,15 +185,28 @@ const borrowBook = async (req, res) => {
 
 const getBorrowedBooks = async (req, res) => {
     try {
-        const borrowedBooks = await BorrowedBook.find({ status: 'Borrowed' })
-            .populate('bookId', 'title author isbn')
-            .populate('studentId', 'name admissionNumber student_email');
-        
-        res.status(200).json({ borrowedBooks });
+        // Fetch all borrowed books
+        const borrowedBooks = await BorrowedBook.find({ status: 'Borrowed' }).populate('bookId', 'title author isbn');
+
+        // Fetch student details for each borrowed book
+        const borrowedBooksWithStudentDetails = await Promise.all(
+            borrowedBooks.map(async (borrowedBook) => {
+                const student = await Student.findOne({ admissionNumber: borrowedBook.borrowedBy.studentNumber });
+                return {
+                    ...borrowedBook._doc, // Spread borrowedBook details
+                    studentDetails: student || { name: 'Unknown', admissionNumber: 'N/A', student_email: 'N/A' }, // Default if student not found
+                };
+            })
+        );
+        console.log(borrowedBooksWithStudentDetails);
+        res.status(200).json({ borrowedBooks: borrowedBooksWithStudentDetails });
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", error });
+        console.error('Error fetching borrowed books:', error);
+        res.status(500).json({ message: 'Internal server error', error });
     }
 };
+
+
 
 
 //Function to update lost book payment

@@ -38,7 +38,7 @@ app.use('/api/teacher', teacherRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/attendance', attendanceRoutes);
-app.use('/api/borrowedBooks', borrowedBookRoutes);
+// app.use('/api/borrowedBooks', borrowedBookRoutes);
 
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
