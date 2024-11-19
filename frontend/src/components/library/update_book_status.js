@@ -80,22 +80,29 @@ const UpdateBookStatus = () => {
     // Update the status of the book
     const handleUpdateStatus = async () => {
         try {
-            const response = await axios.put(`http://localhost:4000/api/books/books/${bookId}/update`, { 
-                status, 
+            const payload = {
+                status,
                 borrowedBy: {
                     studentNumber: studentInfo.studentNumber,
                     borrowDate: studentInfo.borrowDate,
                     returnDate: studentInfo.returnDate,
-                    datetoReturn: studentInfo.datetoReturn
-                } 
-            });
+                    datetoReturn: studentInfo.datetoReturn,
+                },
+            };
+    
+            const response = await axios.put(
+                `http://localhost:4000/api/books/books/${bookId}/update`,
+                payload
+            );
+    
             if (response.status === 200) {
                 alert('Book status updated successfully');
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error updating book status:', error);
         }
     };
+    
 
     // Filtered lists based on search terms
     const filteredBooks = books.filter(book =>
