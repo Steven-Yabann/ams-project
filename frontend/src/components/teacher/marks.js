@@ -13,7 +13,7 @@ const Marks = () => {
   });
 
   const subjects = ["Math", "Chemistry", "English", "Physics", "Biology", "History"];
-  const typeofTests = ["Exam", "Quiz", "Assignment", "Project"];
+  const typeofTests = ["Exam", "Quiz"];
 
   useEffect(() => {
     fetchAdmissionNumbers();
@@ -41,7 +41,6 @@ const Marks = () => {
       ...formData, 
       marks: Number(formData.marks),
       grade: calculateGrade(Number(formData.marks)),
-      GPA: calculateGPA(),
     };
 
     const existingIndex = marksData.findIndex((data) => data.studentId === formData.studentId);
@@ -82,29 +81,16 @@ const Marks = () => {
     return "E";
   };
 
-  const calculateGPA = () => {
-    if (marksData.length === 0) return 0;
-    const totalPoints = marksData.reduce((acc, data) => {
-      const grade = calculateGrade(data.marks);
-      let points = 0;
-      switch (grade) {
-        case "A": points = 4; break;
-        case "B": points = 3; break;
-        case "C": points = 2; break;
-        case "D": points = 1; break;
-        default: points = 0;
-      }
-      return acc + points;
-    }, 0);
-    return (totalPoints / marksData.length).toFixed(2);
-  };
+  // Filter data by typeofTest
+  const examData = marksData.filter((data) => data.typeofTest === "Exam");
+  const quizData = marksData.filter((data) => data.typeofTest === "Quiz");
 
   return (
     <div className="container">
       <header>
         <h2>Marks Management</h2>
-        <p>GPA: {calculateGPA()}</p>
       </header>
+
       <div className="form-section">
         <select
           name="studentId"
@@ -159,6 +145,8 @@ const Marks = () => {
         <button onClick={handleAddUpdate}>Add/Update Marks</button>
       </div>
 
+      {/* Exam Table */}
+      <h3>Exam Marks</h3>
       <table>
         <thead>
           <tr>
@@ -166,18 +154,44 @@ const Marks = () => {
             <th>Subject</th>
             <th>Marks</th>
             <th>Grade</th>
-            <th>Assessment Type</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {marksData.map((data) => (
+          {examData.map((data) => (
             <tr key={data._id}>
               <td>{data.studentId}</td>
               <td>{data.subject}</td>
               <td>{data.marks}</td>
               <td>{calculateGrade(data.marks)}</td>
-              <td>{data.typeofTest}</td>
+              <td>
+                <button onClick={() => handleEdit(data)}>Edit</button>
+                <button onClick={() => handleDelete(data._id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Quiz Table */}
+      <h3>Quiz Marks</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Admission No</th>
+            <th>Subject</th>
+            <th>Marks</th>
+            <th>Grade</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {quizData.map((data) => (
+            <tr key={data._id}>
+              <td>{data.studentId}</td>
+              <td>{data.subject}</td>
+              <td>{data.marks}</td>
+              <td>{calculateGrade(data.marks)}</td>
               <td>
                 <button onClick={() => handleEdit(data)}>Edit</button>
                 <button onClick={() => handleDelete(data._id)}>Delete</button>
