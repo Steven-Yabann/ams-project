@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Alert, Spinner, Badge, Container, Row, Col, Button } from 'react-bootstrap';
-import { Calendar, User, AlertCircle, CheckCircle, XCircle, BarChart2, PieChart, RefreshCw } from 'lucide-react';
+import { Calendar, User, AlertCircle, CheckCircle, XCircle, BarChart2, PieChart, RefreshCw, BookOpen } from 'lucide-react';
 import { PieChart as RechartsePie, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const StudentAttendance = ({ studentId }) => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('table'); // 'table', 'pie', 'bar'
+  const [view, setView] = useState('table');
   const admissionNumber = sessionStorage.getItem('admissionNumber');
+
+  const subjects = ['Math', 'Physics','Biology' ,'Chemistry','English'];
+
+  const getRandomSubject = () => {
+    return subjects[Math.floor(Math.random() * subjects.length)];
+  };
 
   const fetchAttendance = async () => {
     setLoading(true);
@@ -16,7 +22,14 @@ const StudentAttendance = ({ studentId }) => {
       const response = await fetch(`http://localhost:4000/api/attendance/student/${admissionNumber}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-      setAttendanceRecords(data);
+      
+      // Add subject to each attendance record
+      const enhancedData = data.map(record => ({
+        ...record,
+        subject: getRandomSubject()
+      }));
+      
+      setAttendanceRecords(enhancedData);
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to fetch attendance records.');
@@ -145,6 +158,7 @@ const StudentAttendance = ({ studentId }) => {
             <thead className="bg-light">
               <tr>
                 <th>Date</th>
+                <th>Subject</th>
                 <th>Status</th>
                 <th>Day</th>
               </tr>
@@ -155,6 +169,12 @@ const StudentAttendance = ({ studentId }) => {
                 return (
                   <tr key={record._id}>
                     <td>{date.toLocaleDateString()}</td>
+                    <td>
+                      <Badge bg="secondary" className="d-flex align-items-center w-75">
+                        <BookOpen size={16} className="me-1" />
+                        {record.subject}
+                      </Badge>
+                    </td>
                     <td>
                       <Badge bg={record.present ? 'success' : 'danger'} className="d-flex align-items-center w-75">
                         {record.present ? (
