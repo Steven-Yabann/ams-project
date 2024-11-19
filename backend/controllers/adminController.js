@@ -3,6 +3,8 @@ const Student = require('../models/studentModel');
 const Teacher = require('../models/teacherModel');
 const User = require('../models/userModel');
 const Book = require('../models/bookModel');
+const Fee = require('../models/fee');
+const Marks = require('../models/marksModel');
 const nodemailer = require('nodemailer');
 
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -57,7 +59,7 @@ The Team`
 const createStudent = async (req, res) => {
     console.log("Received request body:", req.body);
     try {
-        const { name, admissionNumber, student_email } = req.body;
+        const { name, admissionNumber, student_email, gender } = req.body;
 
         const existingUser = await User.findOne({ admissionNumber });
         const existingStudentEmail = await Student.findOne({ student_email });
@@ -76,12 +78,14 @@ const createStudent = async (req, res) => {
             name,
             admissionNumber,
             student_email,
+            gender,
         });
 
         // Create corresponding user document
         const newUser = new User({
             admissionNumber,
             password,
+            gender,
             userCategory: 'student',
         });
 
@@ -107,7 +111,7 @@ const createStudent = async (req, res) => {
 const createTeacher = async (req, res) => {
     console.log("Received request body:", req.body);
     try {
-        const { name, identification_no, email, phone_no, role, department } = req.body;
+        const { name, identification_no, email, phone_no, role, department, gender } = req.body;
 
         // Generate a random password
         const password = generatePassword();
@@ -120,6 +124,7 @@ const createTeacher = async (req, res) => {
             phone_no,
             role,
             department,
+            gender,
         });
 
         // Create corresponding user document
@@ -127,6 +132,7 @@ const createTeacher = async (req, res) => {
             admissionNumber: identification_no,
             password,
             userCategory: 'teacher',
+            gender,
         });
 
         await newTeacher.save();
@@ -146,39 +152,199 @@ const createTeacher = async (req, res) => {
     }
 };
 
-const getStudent = async (req, res) => {
-    res.json({ message: "Student response" });
+const getStudents = async (req, res) => {
+    try {
+        const students = await Student.find().select('name admissionNumber student_email gender');
+        res.status(200).json(students);
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        res.status(500).json({ message: "Error fetching students" });
+    }
 };
 
-const getTeacher = async (req, res) => {
-    res.json({ message: "Teacher response" });
+const getTeachers = async (req, res) => {
+    try {
+        const teachers = await Teacher.find().select('name email phone_no role department gender');
+        res.status(200).json(teachers);
+    } catch (error) {
+        console.error("Error fetching teachers:", error);
+        res.status(500).json({ message: "Error fetching teachers" });
+    }
 };
 
- const dashboardStats = async (req, res) => {
+const dashboardStats = async (req, res) => {
     try {
         const studentsCount = await Student.countDocuments();
         const teachersCount = await Teacher.countDocuments();
         const usersCount = await User.countDocuments();
-        const booksCount = await Book.countDocuments(); // Count the number of books
+
+        const booksTotal = await Book.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalBooks: { $sum: "$totalCopies" },
+                },
+            },
+        ]);
+
+        const totalBooks = booksTotal[0]?.totalBooks || 0; // Fallback to 0 if no books
 
         const recentUsers = await User.find()
             .sort({ createdAt: -1 })
             .limit(10)
             .select('admissionNumber userCategory createdAt');
 
-        res.json({ studentsCount, teachersCount, usersCount, booksCount, recentUsers });
+        const totalFees = await Fee.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalFeesCollected: { $sum: "$feesPaid" },
+                    totalFeesExpected: { $sum: "$totalFees" },
+                },
+            },
+        ]);
+
+        const totalFeesCollected = totalFees[0]?.totalFeesCollected || 0;
+        const totalFeesExpected = totalFees[0]?.totalFeesExpected || 0;
+        const totalUnpaidFees = totalFeesExpected - totalFeesCollected; // Calculate unpaid fees
+
+        const feeStats = {
+            totalFeesCollected,
+            totalUnpaidFees,
+        };
+
+        const paidCount = await Fee.countDocuments({ isCleared: true });
+        const unpaidCount = await Fee.countDocuments({ isCleared: false });
+
+
+        // Group student admissions by date
+        const studentAdmissions = await Student.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        // Group teacher admissions by date
+        const teacherAdmissions = await Teacher.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        res.json({
+            studentsCount,
+            teachersCount,
+            usersCount,
+            booksCount: totalBooks,
+            recentUsers,
+            feeStats,
+            studentAdmissions,
+            teacherAdmissions,
+        });
     } catch (error) {
         console.error("Error fetching dashboard stats:", error);
         res.status(500).json({ message: "Error fetching dashboard statistics" });
     }
 };
 
+const getMarksData = async (req, res) => {
+    try {
+        const marksData = await Marks.aggregate([
+            {
+                $match: { typeofTest: "Exam" }, // Filter to include only Exams
+            },
+            {
+                $group: {
+                    _id: { typeofTest: "$typeofTest", subject: "$subject" },
+                    averageMarks: { $avg: "$marks" },
+                    highestMarks: { $max: "$marks" },
+                    lowestMarks: { $min: "$marks" },
+                },
+            },
+            {
+                $sort: { "_id.subject": 1 }, // Sort by subject alphabetically
+            },
+        ]);
+        console.log(marksData);
+        res.status(200).json(marksData);
+    } catch (error) {
+        console.error("Error fetching marks data:", error);
+        res.status(500).json({ message: "Error fetching marks data" });
+    }
+};
+
+const getGenderDistributionStudent = async (req, res) => {
+    try {
+        const genderData = await Student.aggregate([
+            {
+                $group: {
+                    _id: "$gender", // Group by gender
+                    count: { $sum: 1 }, // Count the number of students for each gender
+                },
+            },
+        ]);
+        console.log(genderData);
+        res.status(200).json(genderData);
+    } catch (error) {
+        console.error("Error fetching gender distribution:", error);
+        res.status(500).json({ message: "Error fetching gender distribution" });
+    }
+};
+
+const getGenderDistributionTeacher = async (req, res) => {
+    try {
+        const genderData = await Teacher.aggregate([
+            {
+                $group: {
+                    _id: "$gender",
+                    count: { $sum: 1 }, 
+                },
+            },
+        ]);
+        console.log(genderData);
+        res.status(200).json(genderData);
+    } catch (error) {
+        console.error("Error fetching gender distribution:", error);
+        res.status(500).json({ message: "Error fetching gender distribution" });
+    }
+};
+
+const updateStudentGender = async (req, res) => {
+    const {identification_no, gender } = req.body;
+
+    if (!identification_no || !gender) {
+        return res.status(400).json({ message: 'Admission number and gender are required' });
+    }
+
+    if (!['Male', 'Female'].includes(gender)) {
+        return res.status(400).json({ message: 'Gender must be either Male or Female' });
+    }
+
+    try {
+        const student = await Teacher.findOneAndUpdate(
+            { identification_no },
+            { gender },
+            { new: true }
+        );
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        res.status(200).json({ message: 'Student gender updated successfully', student });
+    } catch (error) {
+        console.error('Error updating student gender:', error);
+        res.status(500).json({ message: 'Error updating student gender' });
+    }
+};
 
 
-
-
-
-
-
-
-module.exports = { createStudent, createTeacher, getStudent, getTeacher, dashboardStats };
+module.exports = { createStudent, createTeacher, getStudents, getTeachers, dashboardStats, getMarksData, getGenderDistributionStudent, updateStudentGender, getGenderDistributionTeacher};

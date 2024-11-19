@@ -3,7 +3,7 @@ import axios from "axios";
 import './marks.css';
 
 const Marks = () => {
-  const [marksData, setMarksData] = useState([]); // Initialize marksData as an empty array
+  const [marksData, setMarksData] = useState([]);
   const [admissionNumbers, setAdmissionNumbers] = useState([]);
   const [formData, setFormData] = useState({
     studentId: "",
@@ -13,32 +13,23 @@ const Marks = () => {
   });
 
   const subjects = ["Math", "Chemistry", "English", "Physics", "Biology", "History"];
-  const typeofTests = ["Exam", "Quiz", "Assignment", "Project"];
+  const typeofTests = ["Exam", "Quiz"];
 
-  // Fetch admission numbers and marks data from the backend
   useEffect(() => {
     fetchAdmissionNumbers();
     fetchMarksData();
-  }, []); // Empty array to run this only on initial mount
+  }, []);
 
   const fetchAdmissionNumbers = () => {
     axios.get("http://localhost:4000/api/teacher/admission-numbers")
-      .then((response) => {
-        setAdmissionNumbers(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching admission numbers:", error);
-      });
+      .then((response) => setAdmissionNumbers(response.data))
+      .catch((error) => console.error("Error fetching admission numbers:", error));
   };
 
   const fetchMarksData = () => {
     axios.get("http://localhost:4000/api/teacher/marks")
-      .then((response) => {
-        setMarksData(response.data); // Set fetched marks data
-      })
-      .catch((error) => {
-        console.error("Error fetching marks data:", error);
-      });
+      .then((response) => setMarksData(response.data))
+      .catch((error) => console.error("Error fetching marks data:", error));
   };
 
   const handleInputChange = (e) => {
@@ -49,43 +40,37 @@ const Marks = () => {
     const newData = { 
       ...formData, 
       marks: Number(formData.marks),
-      grade: calculateGrade(Number(formData.marks)), // Calculate grade
-      GPA: calculateGPA(Number(formData.marks)),    // Calculate GPA based on the marks
+      grade: calculateGrade(Number(formData.marks)),
     };
-  
-    const existingIndex = marksData.findIndex((data) => data.studentId === Number(formData.studentId));
-  
+
+    const existingIndex = marksData.findIndex((data) => data.studentId === formData.studentId);
+
     if (existingIndex !== -1) {
-      // If data exists, send a PUT request to update
       axios.put(`http://localhost:4000/api/teacher/marks/${formData.studentId}`, newData)
-        .then((response) => {
-          fetchMarksData(); // Fetch updated marks data after update
-        })
-        .catch((error) => {
-          console.error("Error updating marks:", error);
-        });
+        .then(fetchMarksData)
+        .catch((error) => console.error("Error updating marks:", error));
     } else {
-      // If data doesn't exist, send a POST request to add new data
       axios.post("http://localhost:4000/api/teacher/marks", newData)
-        .then((response) => {
-          fetchMarksData(); // Fetch updated marks data after adding
-        })
-        .catch((error) => {
-          console.error("Error adding marks:", error);
-        });
+        .then(fetchMarksData)
+        .catch((error) => console.error("Error adding marks:", error));
     }
-  
-    // Reset form data after adding or updating
+
     setFormData({ studentId: "", subject: "", marks: "", typeofTest: "" });
   };
-  
 
   const handleEdit = (data) => {
-    setFormData(data);
+    setFormData({
+      studentId: data.studentId,
+      subject: data.subject,
+      marks: data.marks,
+      typeofTest: data.typeofTest,
+    });
   };
 
   const handleDelete = (id) => {
-    setMarksData(marksData.filter((data) => data.id !== id));
+    axios.delete(`http://localhost:4000/api/teacher/marks/${id}`)
+      .then(() => setMarksData(marksData.filter((data) => data._id !== id)))
+      .catch((error) => console.error("Error deleting marks:", error));
   };
 
   const calculateGrade = (marks) => {
@@ -96,31 +81,17 @@ const Marks = () => {
     return "E";
   };
 
-  const calculateGPA = () => {
-    if (marksData.length === 0) return 0;
-    const totalPoints = marksData.reduce((acc, data) => {
-      const grade = calculateGrade(data.marks);
-      let points = 0;
-      switch (grade) {
-        case "A": points = 4; break;
-        case "B": points = 3; break;
-        case "C": points = 2; break;
-        case "D": points = 1; break;
-        default: points = 0;
-      }
-      return acc + points;
-    }, 0);
-    return (totalPoints / marksData.length).toFixed(2);
-  };
+  // Filter data by typeofTest
+  const examData = marksData.filter((data) => data.typeofTest === "Exam");
+  const quizData = marksData.filter((data) => data.typeofTest === "Quiz");
 
   return (
     <div className="container">
       <header>
         <h2>Marks Management</h2>
-        <p>GPA: {calculateGPA()}</p>
       </header>
+
       <div className="form-section">
-        {/* Admission Number Dropdown */}
         <select
           name="studentId"
           value={formData.studentId}
@@ -135,7 +106,6 @@ const Marks = () => {
           ))}
         </select>
 
-        {/* Subject Dropdown */}
         <select
           name="subject"
           value={formData.subject}
@@ -150,7 +120,6 @@ const Marks = () => {
           ))}
         </select>
 
-        {/* Marks Input */}
         <input
           type="number"
           placeholder="Marks"
@@ -159,7 +128,6 @@ const Marks = () => {
           onChange={handleInputChange}
         />
 
-        {/* Assessment Type Dropdown */}
         <select
           name="typeofTest"
           value={formData.typeofTest}
@@ -177,7 +145,8 @@ const Marks = () => {
         <button onClick={handleAddUpdate}>Add/Update Marks</button>
       </div>
 
-      {/* Marks Table */}
+      {/* Exam Table */}
+      <h3>Exam Marks</h3>
       <table>
         <thead>
           <tr>
@@ -185,21 +154,47 @@ const Marks = () => {
             <th>Subject</th>
             <th>Marks</th>
             <th>Grade</th>
-            <th>Assessment Type</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {marksData.map((data) => (
+          {examData.map((data) => (
             <tr key={data._id}>
               <td>{data.studentId}</td>
               <td>{data.subject}</td>
               <td>{data.marks}</td>
               <td>{calculateGrade(data.marks)}</td>
-              <td>{data.typeofTest}</td>
               <td>
                 <button onClick={() => handleEdit(data)}>Edit</button>
-                <button onClick={() => handleDelete(data.id)}>Delete</button>
+                <button onClick={() => handleDelete(data._id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Quiz Table */}
+      <h3>Quiz Marks</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Admission No</th>
+            <th>Subject</th>
+            <th>Marks</th>
+            <th>Grade</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {quizData.map((data) => (
+            <tr key={data._id}>
+              <td>{data.studentId}</td>
+              <td>{data.subject}</td>
+              <td>{data.marks}</td>
+              <td>{calculateGrade(data.marks)}</td>
+              <td>
+                <button onClick={() => handleEdit(data)}>Edit</button>
+                <button onClick={() => handleDelete(data._id)}>Delete</button>
               </td>
             </tr>
           ))}

@@ -1,19 +1,35 @@
 const express = require('express');
 const router = express.Router();
-const { createStudent, createTeacher, getTeacher, dashboardStats } = require('../controllers/adminController');
+const 
+{ 
+    createStudent, 
+    createTeacher, 
+    getTeachers, 
+    getStudents,
+    dashboardStats,
+    getMarksData,
+    getGenderDistributionStudent,
+    getGenderDistributionTeacher,
+    updateStudentGender
+}   = require('../controllers/adminController');
 
 
-// Route to create a student
 router.post('/student', createStudent);
 
-// router.get('/student', createStudent);
+router.get('/students', getStudents);
 
-// Route to create a teacher
 router.post('/teacher', createTeacher);
 
-router.get('/teacher', getTeacher)
+router.get('/teachers', getTeachers)
 
 router.get('/dashboard-stats', dashboardStats);
 
+router.get('/marks', getMarksData);
+
+router.get('/students/gender-distribution', getGenderDistributionStudent);
+
+router.get('/teachers/gender-distribution', getGenderDistributionTeacher);
+
+router.put('/students/update-gender', updateStudentGender);
 
 module.exports = router;
