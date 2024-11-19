@@ -1,113 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+// import { borrowBook } from '../../../../backend/controllers/libraryController';
 
 const ManageFines = () => {
-    const [borrowedBooks, setBorrowedBooks] = useState([]);
-    const [lostBooks, setLostBooks] = useState([]);
-    const [daysDelayed, setDaysDelayed] = useState(0);
-    const [fineAmount, setFineAmount] = useState(0);
-    const [bookCost, setBookCost] = useState(0);
+    const [BorrowedBooks, setBorrowedBooks] = useState([]);
 
     const fetchFinesData = async () => {
         try {
-            const response = await axios.get('http://localhost:4000/api/books/fines');
-            setBorrowedBooks(response.data.borrowedBooks);
-            setLostBooks(response.data.lostBooks);
+            const response = await axios.get('http://localhost:4000/api/books/borrowed');
+            setBorrowedBooks(response.data.borrowedBooks); // Update state with fetched data
+            console.log(BorrowedBooks);
         } catch (error) {
             console.error("Error fetching fine data:", error);
         }
     };
+    
+    
 
     useEffect(() => {
         fetchFinesData();
     }, []);
 
-    const handleFineCalculation = () => {
-        setFineAmount(daysDelayed * 500); // Fine rate, e.g., 500 KES per day
-    };
-
-    const handleBookCostCalculation = () => {
-        setBookCost(bookCost * 1500); // E.g., assume lost book cost is 1500 KES times its original price
-    };
-
     return (
         <div className="content">
             <h2>Manage Fines</h2>
-
             <div className="borrowed-books">
                 <h3>Borrowed Books</h3>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Book Title</th>
-                            <th>Return Status</th>
-                            <th>Fine Amount (KES)</th> {/* {{ edit_1 }} */}
-                            <th>Days Delayed</th>
-                            <th>Payment Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {borrowedBooks.map((book, index) => (
-                            <tr key={index}>
-                                <td>{book.title}</td>
-                                <td>{book.status}</td>
-                                <td>{book.fine.toLocaleString()} KES</td> {/* {{ edit_2 }} */}
-                                <td>{book.daysDelayed}</td>
-                                <td>{book.paid ? 'Paid' : 'Unpaid'}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+    <thead>
+        <tr>
+            <th>Book Title</th>
+            <th>Return Status</th>
+            <th>Fine Amount (KES)</th>
+            <th>Days Delayed</th>
+            <th>Payment Status</th>
+            <th>Student</th>
+        </tr>
+    </thead>
+    <tbody>
+        {BorrowedBooks.map((book, index) => (
+            <tr key={index}>
+                <td>{book.bookId?.title || 'N/A'}</td>
+                <td>{book.status === 'Returned' ? 'Returned' : 'Not Returned'}</td>
+                <td>{book.fineAmount?.toLocaleString() || '0'} KES</td>
+                <td>{book.daysDelayed || '0'}</td>
+                <td>{book.paymentStatus === 'Paid' ? 'Paid' : 'Unpaid'}</td>
+                <td>
+                    {book.borrowedBy?.studentNumber?.name || 'Unknown'} <br />
+                    ({book.borrowedBy?.studentNumber?.studentNumber || 'N/A'})
+                </td>
+            </tr>
+        ))}
+    </tbody>
+</table>
 
-            <div className="lost-books">
-                <h3>Lost Books</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Book Title</th>
-                            <th>Cost (KES)</th> {/* {{ edit_3 }} */}
-                            <th>Paid</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {lostBooks.map((book, index) => (
-                            <tr key={index}>
-                                <td>{book.title}</td>
-                                <td>{book.cost.toLocaleString()} KES</td> {/* {{ edit_4 }} */}
-                                <td>{book.paid ? 'Yes' : 'No'}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="calculate-fine">
-                <h3>Calculate Fine</h3>
-                <label htmlFor="daysDelayed">Number of days delayed</label>
-                <input 
-                    type="number" 
-                    id="daysDelayed" 
-                    value={daysDelayed} 
-                    onChange={(e) => setDaysDelayed(e.target.value)} 
-                    placeholder='No of days delayed'
-                />
-                <button onClick={handleFineCalculation}>Calculate</button>
-                <p>Fine Amount: {fineAmount.toLocaleString()} KES</p> {/* {{ edit_5 }} */}
-            </div>
-
-            <div className="calculate-book-cost">
-                <h3>Calculate Cost of Lost Book</h3>
-                <label htmlFor="bookCost">Cost of book lost</label>
-                <input 
-                    type="number" 
-                    id="bookCost" 
-                    value={bookCost} 
-                    onChange={(e) => setBookCost(e.target.value)} 
-                    placeholder='Cost of book lost'
-                />
-                <button onClick={handleBookCostCalculation}>Calculate Cost to be paid</button>
-                <p>Book Cost: {bookCost.toLocaleString()} KES</p> {/* {{ edit_6 }} */}
             </div>
         </div>
     );

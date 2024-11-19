@@ -52,6 +52,7 @@ const TeacherDashboard = () => {
         const teacherId = '64c2fa12e7a12b0abc123456'; // Replace with the actual teacher ID
     
         try {
+            console.log("Submitting Date:", date); // Debugging: Log the date
             const response = await axios.post('http://localhost:4000/api/teacher/attendance', {
                 teacherId,
                 date,

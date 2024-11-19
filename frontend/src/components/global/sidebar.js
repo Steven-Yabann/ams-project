@@ -27,7 +27,7 @@ export default function Sidebar({ user_cat }){
                         <Link to="/update-book-status">Update Book Status</Link>
                         <Link to="/manage-fines">Manage Fines</Link>
                         <Link to="/view-book-records">View Book Records</Link>
-                        <Link to="/payment-records">Payment Records</Link>
+                        {/* <Link to="/payment-records">Payment Records</Link> */}
                         </ul> 
                     </>
                 )
@@ -36,6 +36,7 @@ export default function Sidebar({ user_cat }){
                     <>
                         <h2>Teacher</h2>
                         <ul>
+                        {/* <Link to="/TeacherD">Dashboard </Link> */}
                         <Link to="/attendance">Attendance </Link>
                         <Link to="/marks">Performance</Link>
                         <Link to="/calender">Calender</Link>

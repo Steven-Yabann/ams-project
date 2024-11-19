@@ -83,46 +83,66 @@ const fetchStudents = async (req, res) => {
 
 
 const updateBookStatus = async (req, res) => {
-    const { bookId } = req.params;  // Accepting bookId from the request parameters
-    const { status, borrowedBy } = req.body;  // 'borrowedBy' contains student details and borrow information
+    const { bookId } = req.params; // Get book ID from request parameters
+    const { status, borrowedBy } = req.body; // Get status and student info from request body
 
     try {
-        // Step 1: Find the book in the Books collection using the bookId
+        // Find the book by ID
         const book = await Book.findById(bookId);
         if (!book) {
             return res.status(404).json({ message: "Book not found" });
         }
 
-        // Step 2: Check if the book is available for borrowing (i.e., if copiesAvailable > 0)
-        if (book.copiesAvailable < 1) {
-            return res.status(400).json({ message: "No copies available for borrowing" });
+        // Handle returning the book
+        if (status === "Returned") {
+            // Update book copies
+            book.copiesAvailable += 1;
+            book.status = "Available"; // Reset the book status
+            await book.save();
+            console.log("book status updated");
+
+            // Update the borrowed book record
+            const borrowedBook = await BorrowedBook.findOneAndUpdate(
+                { bookId, status: "Borrowed" }, // Find the borrowed book record
+                { status: "Returned", returnDate: borrowedBy.returnDate }, // Update the status and return date
+                { new: true }
+            );
+
+            if (!borrowedBook) {
+                return res.status(404).json({ message: "Borrowed book record not found" });
+            }
+            console.log("BORROWED: ", borrowedBook)
+            return res.status(200).json({ message: "Book returned successfully", book, borrowedBook });
         }
 
-        // Step 3: Change the status of the book to 'Borrowed'
-        book.status = 'Borrowed';
+        // Handle other status updates (e.g., Borrowed, Lost)
+        if (status === "Borrowed") {
+            if (book.copiesAvailable < 1) {
+                return res.status(400).json({ message: "No copies available for borrowing" });
+            }
+            book.status = "Borrowed";
+            book.copiesAvailable -= 1;
+            await book.save();
 
-        // Step 4: Decrease the available copies of the book
-        book.copiesAvailable -= 1;
-        await book.save();  // Save the updated book record
+            const borrowedBook = new BorrowedBook({
+                bookId,
+                borrowedBy,
+                borrowDate: new Date(),
+                returnDate: borrowedBy.returnDate || null,
+                status: "Borrowed",
+            });
 
-        // Step 5: Create a new BorrowedBook record to track who borrowed the book
-        const borrowedBook = new BorrowedBook({
-            bookId,
-            borrowedBy,  // Student details like student number, borrow date, return date, etc.
-            borrowDate: new Date(),
-            returnDate: borrowedBy.returnDate || null,  // Optional return date
-            status: 'Borrowed',  // Set the status to 'Borrowed'
-        });
+            await borrowedBook.save();
+            return res.status(201).json({ message: "Book borrowed successfully", book, borrowedBook });
+        }
 
-        await borrowedBook.save();  // Save the new BorrowedBook record
-
-        // Step 6: Respond with a success message
-        res.status(201).json({ message: "Book borrowed successfully", borrowedBook });
-
+        res.status(400).json({ message: "Invalid status" });
     } catch (error) {
+        console.error("Error updating book status:", error);
         res.status(500).json({ message: "Internal server error", error });
     }
 };
+
 
 
 
@@ -165,15 +185,28 @@ const borrowBook = async (req, res) => {
 
 const getBorrowedBooks = async (req, res) => {
     try {
-        const borrowedBooks = await BorrowedBook.find({ status: 'Borrowed' })
-            .populate('bookId', 'title author isbn')
-            .populate('studentId', 'name admissionNumber student_email');
-        
-        res.status(200).json({ borrowedBooks });
+        // Fetch all borrowed books
+        const borrowedBooks = await BorrowedBook.find({ status: 'Borrowed' }).populate('bookId', 'title author isbn');
+
+        // Fetch student details for each borrowed book
+        const borrowedBooksWithStudentDetails = await Promise.all(
+            borrowedBooks.map(async (borrowedBook) => {
+                const student = await Student.findOne({ admissionNumber: borrowedBook.borrowedBy.studentNumber });
+                return {
+                    ...borrowedBook._doc, // Spread borrowedBook details
+                    studentDetails: student || { name: 'Unknown', admissionNumber: 'N/A', student_email: 'N/A' }, // Default if student not found
+                };
+            })
+        );
+        console.log(borrowedBooksWithStudentDetails);
+        res.status(200).json({ borrowedBooks: borrowedBooksWithStudentDetails });
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", error });
+        console.error('Error fetching borrowed books:', error);
+        res.status(500).json({ message: 'Internal server error', error });
     }
 };
+
+
 
 
 //Function to update lost book payment

@@ -16,7 +16,7 @@ router.put('/books/:bookId/update', updateBookStatus);
 
 router.get('/fetch-students', fetchStudents);
 
-router.get('/books/borrowed', getBorrowedBooks);
+router.get('/borrowed', getBorrowedBooks);
 
 router.put('/books/:isbn/payment-status', updateLostBookPayment);
 
