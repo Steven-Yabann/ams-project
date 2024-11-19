@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bar, Line } from 'react-chartjs-2';
 
-const TeacherDashboard = () => {
+const TeacherD = () => {
   const [marksData, setMarksData] = useState([]);
   const [attendanceData, setAttendanceData] = useState([]);
   const [genderPerformance, setGenderPerformance] = useState({ maleAverage: 0, femaleAverage: 0 });
@@ -124,4 +124,4 @@ const TeacherDashboard = () => {
   );
 };
 
-export default TeacherDashboard;
+export default TeacherD;

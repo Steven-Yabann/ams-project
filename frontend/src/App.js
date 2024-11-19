@@ -15,6 +15,7 @@ import Login from './components/global/login';
 import Sidebar from './components/global/sidebar';
 
 // Teacher components
+// import TeacherD from './components/teacher/TeacherD';
 import TeacherDashboard from './components/teacher/attendance';
 import Marks from './components/teacher/marks';
 import TeacherProfile from './components/teacher/profile';
@@ -78,6 +79,7 @@ export default function App() {
                             <Route path="/payment-records" element={<ProtectedRoute category="library"><PaymentRecords /></ProtectedRoute>} />
 
                             {/* Teacher Routes */}
+                            {/* <Route path="/TeacherD" element={<ProtectedRoute category="teacher"><TeacherD /></ProtectedRoute>} /> */}
                             <Route path="/attendance" element={<ProtectedRoute category="teacher"><TeacherDashboard /></ProtectedRoute>} />
                             <Route path="/marks" element={<ProtectedRoute category="teacher"><Marks /></ProtectedRoute>} />
                             <Route path="/profile" element={<ProtectedRoute category="teacher"><TeacherProfile /></ProtectedRoute>} />

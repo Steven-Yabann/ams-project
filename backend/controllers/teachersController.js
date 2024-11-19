@@ -82,7 +82,8 @@ const deleteMarks = async (req, res) => {
 // Function to add attendance
 const addAttendance = async (req, res) => {
     try {
-        const { teacherId, students } = req.body; // Expect teacherId and students array
+        const { teacherId, date, students } = req.body; // Expect teacherId and students array
+        console.log('Received Date:', date); // Debugging: Log the received date
 
         // Validate input
         if (!teacherId || !Array.isArray(students) || students.length === 0) {
@@ -93,7 +94,7 @@ const addAttendance = async (req, res) => {
         const attendanceRecords = students.map((student) => ({
             teacherId,
             studentId: student.admissionNo,
-            date: new Date(), // Current date
+            date: new Date(date), // Current date
             present: student.present,
         }));
 
